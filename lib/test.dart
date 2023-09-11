@@ -66,7 +66,7 @@ class _TestAppState extends State<TestApp> {
                     onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => SettingScreen()));
                     },
-                    child: Text("알림 설정", style: TextStyle(fontSize: 24)),
+                    child: const Text("알림 설정", style: TextStyle(fontSize: 24)),
                   )
                 ],
               ),

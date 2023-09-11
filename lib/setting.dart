@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:file_picker/file_picker.dart';
 
 class SettingScreen extends StatefulWidget {
   @override
@@ -7,7 +8,7 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
-  String selectedOption = 'Option 1'; // 초기 선택값 설정
+  String selectedOption = 'beep'; // 초기 선택값 설정
   AudioPlayer player = AudioPlayer(); // 오디오 객체 생성
 
   @override
@@ -22,6 +23,7 @@ class _SettingScreenState extends State<SettingScreen> {
   //   await player.setAsset('assets/audio/sample.mp3');
   //   player.play();
   // }
+
   Future<void> audioPlayer(String audioAsset) async {
     print("audioPlayer() 호출");
     await player.setVolume(1);
@@ -30,11 +32,27 @@ class _SettingScreenState extends State<SettingScreen> {
     player.play();
   }
 
-  // Future playEffectAudio() async {
-  //   final duration = await player.setAsset("assets/audio/sample.mp3");
-  //   await player.play();
-  //   print("오디오 재생 성공");
-  // }
+  Future<void> pickAndPlayAudio() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+    );
+
+    if (result != null) {
+      PlatformFile file = result.files.first;
+      String filePath = file.path!; // 선택한 파일의 경로
+      List<String> splitedStr = filePath.split('/');
+
+      print("splitedStr: ${splitedStr}");
+      print("splitedStr[last]: ${splitedStr.last}");
+
+      await player.stop(); // 기존 오디오 정지
+      await player.setFilePath(filePath); // 새로운 파일 설정
+      setState(() {
+        selectedOption = splitedStr.last;
+      });
+      player.play();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +147,9 @@ class _SettingScreenState extends State<SettingScreen> {
             // ),
             Text('선택한 옵션: $selectedOption'),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                pickAndPlayAudio();
+              },
               child: const Text("휴대전화에서 추가", style: TextStyle(fontSize: 24)),
             ),
           ],
