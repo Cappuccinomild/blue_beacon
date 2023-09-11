@@ -39,6 +39,8 @@ dependencies:
   permission_handler: ^10.4.5
   intl: ^0.18.1
   flutter_local_notifications: ^15.1.1
+  audioplayers: ^5.1.0
+  just_audio: ^0.9.34
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +66,12 @@ flutter:
   assets:
     - assets/image/bluetooth_on.png
     - assets/image/bluetooth_off.png
+    - assets/audio/sample.mp3
+    - assets/audio/beep.mp3
+    - assets/audio/beep2.mp3
+    - assets/audio/beep3.mp3
+    - assets/audio/chicken.mp3
+    - assets/audio/playtime.mp3
 
   # To add assets to your application, add an assets section, like this:
   # assets:
