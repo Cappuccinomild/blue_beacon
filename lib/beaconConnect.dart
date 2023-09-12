@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:blue_beacon/setting.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BeaconConnectScreen extends StatefulWidget {
   @override
@@ -11,7 +12,43 @@ class BeaconConnectScreen extends StatefulWidget {
 class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
   bool isConnected = false;
   int remainingSeconds = 5;
+  bool distance_alarm = false;
   late Timer timer; // 타이머 선언
+
+  void loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+
+      if ( prefs.getString("beacon") == "on" ){
+        print("on");
+        // 비컨과 스마트폰이 가까운 경우
+        if( prefs.getString("proximity") == "Near" ){
+          print("Near");
+          String? myID = prefs.getString("nearBeacon");
+          prefs.setString("MyID", myID!);
+
+          print(myID);
+
+          setState(() {
+            isConnected = true;
+          });
+        }
+
+        // 비컨은 존재하지만 거리가 먼 경우
+        // 더욱 가까이 붙여주세요 라는 문구를 표시함
+        else{
+
+          setState(() {
+            distance_alarm = true;
+          });
+
+        }
+
+      }
+    });
+  }
+
 
   @override
   void initState() {
@@ -19,7 +56,9 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
 
     // 1초마다 타이머를 체크하여 남은 시간을 갱신
     timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+      loadData();
       if (isConnected && remainingSeconds > 0) {
+
         setState(() {
           remainingSeconds--;
         });
@@ -37,6 +76,7 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
     timer.cancel();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +125,7 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   setState(() {
+                    Navigator.of(context).pop();
                     isConnected = !isConnected;
                     if (isConnected == false) {
                       remainingSeconds = 5;
@@ -92,7 +133,7 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
                   });
                 },
                 child: Text(
-                  isConnected ? "연결 해제" : "연결하기",
+                  isConnected ? "메인 화면으로" : "연결하기",
                   style: const TextStyle(fontSize: 24),
                 ),
               ),

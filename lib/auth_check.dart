@@ -220,7 +220,9 @@ void onStart(ServiceInstance service) async {
                 888, 'STATE', jsonData['distance'], platformChannelSpecifics,
                 payload: 'item x');
 
-            //preferences.setString(jsonData['uuid'], data);
+            preferences.setString("proximity", jsonData['proximity']);
+            preferences.setString("nearBeacon", jsonData['uuid']);
+            preferences.setString(jsonData['uuid'], data);
             preferences.setString("beacon", "on");
           }
       },
