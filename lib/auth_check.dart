@@ -195,9 +195,11 @@ void onStart(ServiceInstance service) async {
       android: androidPlatformChannelSpecifics,
       iOS: iOSPlatformChannelSpecifics);
 
-  final timeoutDuration = Duration(seconds: 2);
+  final timeoutDuration = Duration(seconds: 3);
 
-  beaconEventsController.stream.timeout(timeoutDuration, onTimeout:(event) {
+  final event_stream = beaconEventsController.stream;
+
+  event_stream.timeout(timeoutDuration, onTimeout:(event) {
 
     print("time_out : $event");
     flutterLocalNotificationsPlugin.show(
@@ -206,6 +208,7 @@ void onStart(ServiceInstance service) async {
 
     preferences.setString("beacon", "off");
 
+    BeaconsPlugin.startMonitoring();
     }).listen(
           (data) {
           print("data_recevie : $data");
@@ -217,16 +220,17 @@ void onStart(ServiceInstance service) async {
                 888, 'STATE', jsonData['distance'], platformChannelSpecifics,
                 payload: 'item x');
 
+            //preferences.setString(jsonData['uuid'], data);
             preferences.setString("beacon", "on");
           }
       },
       onDone: () {
+            print("listen_done");
       },
       onError: (error) {
         print("Error: $error");
       });
 }
-
 
 class authApp extends StatelessWidget {
   @override

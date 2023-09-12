@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:blue_beacon/beaconConnect.dart';
 import 'package:blue_beacon/setting.dart';
 import 'package:flutter/material.dart';
@@ -97,6 +99,7 @@ class _TestAppState extends State<TestApp> {
                 child: InkWell(
                   highlightColor: Colors.transparent, // 모서리로 퍼져나가는 이펙트 제거
                   splashColor: Colors.transparent, // 클릭시 원형 이펙트 제거
+
                   onTap: () {
                     setState(() {
                       isBluetoothOn = !isBluetoothOn;
