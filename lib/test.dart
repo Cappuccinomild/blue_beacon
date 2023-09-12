@@ -115,7 +115,7 @@ class _TestAppState extends State<TestApp> {
                 child: Column(
                   children: [
                     Text(
-                      isBluetoothOn ? "블루투스가 켜져있습니다" : "블루투스가 꺼져있습니다",
+                      isBluetoothOn ? "비컨이 켜져있습니다" : "비컨이 꺼져있습니다",
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -124,8 +124,8 @@ class _TestAppState extends State<TestApp> {
                     const SizedBox(height: 5),
                     Text(
                       isBluetoothOn
-                          ? "버튼을 누르면 블루투스 연결이 해제됩니다"
-                          : "버튼을 눌러 블루투스를 켜세요",
+                          ? "비컨의 전원을 꺼 알람을 해제하세요"
+                          : "비컨의 전원을 켜 알람을 울려주세요",
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.black26,
