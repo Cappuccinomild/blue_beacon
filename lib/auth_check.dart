@@ -208,12 +208,14 @@ void onStart(ServiceInstance service) async {
 
     preferences.setString("beacon", "off");
 
+
     BeaconsPlugin.startMonitoring();
     }).listen(
           (data) {
-          print("data_recevie : $data");
 
           if (data.isNotEmpty) {
+            print("data_recevie : $data");
+
             Map<String, dynamic> jsonData = jsonDecode(data);
 
             flutterLocalNotificationsPlugin.show(

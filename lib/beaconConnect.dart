@@ -23,7 +23,7 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
       if ( prefs.getString("beacon") == "on" ){
         print("on");
         // 비컨과 스마트폰이 가까운 경우
-        if( prefs.getString("proximity") == "Near" ){
+        if( prefs.getString("proximity") == "Near" || prefs.getString("proximity") == "Immediate" ){
           print("Near");
           String? myID = prefs.getString("nearBeacon");
           prefs.setString("MyID", myID!);
