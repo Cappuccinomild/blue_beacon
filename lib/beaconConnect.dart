@@ -1,7 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:beacons_plugin/beacons_plugin.dart';
 import 'package:blue_beacon/setting.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BeaconConnectScreen extends StatefulWidget {
@@ -10,10 +17,16 @@ class BeaconConnectScreen extends StatefulWidget {
 }
 
 class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
   bool isConnected = false;
   int remainingSeconds = 5;
   bool distance_alarm = false;
   late Timer timer; // 타이머 선언
+  String ID = "";
+
+  Map<String, dynamic> jsonData = {};
 
   void loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -49,6 +62,13 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
     });
   }
 
+  static void updateID(String ID) async{
+
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    preferences.setString("ID", ID);
+
+  }
 
   @override
   void initState() {
@@ -69,6 +89,7 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
         Navigator.of(context).pop();
       }
     });
+
   }
 
   @override
@@ -96,6 +117,28 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
                     color: Colors.black,
                     fontWeight: FontWeight.bold),
               ),
+            ),
+            StreamBuilder<Map<String, dynamic>?>(
+              stream: FlutterBackgroundService().on('update'),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                final data = snapshot.data!;
+                String? device = data["uuid"];
+                String? range = data["proximity"];
+                String? distance = data["distance"];
+                return Column(
+                  children: [
+                    Text(device ?? 'Unknown'),
+                    Text(range ?? 'Unknown'),
+                    Text(distance ?? 'Unknown'),
+                  ],
+                );
+              },
             ),
             Container(
               width: 100,

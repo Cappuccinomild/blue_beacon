@@ -206,9 +206,6 @@ void onStart(ServiceInstance service) async {
         888, 'STATE', "OFF", platformChannelSpecifics,
         payload: 'item x');
 
-    preferences.setString("beacon", "off");
-
-
     BeaconsPlugin.startMonitoring();
     }).listen(
           (data) {
@@ -222,10 +219,14 @@ void onStart(ServiceInstance service) async {
                 888, 'STATE', jsonData['distance'], platformChannelSpecifics,
                 payload: 'item x');
 
-            preferences.setString("proximity", jsonData['proximity']);
-            preferences.setString("nearBeacon", jsonData['uuid']);
-            preferences.setString(jsonData['uuid'], data);
-            preferences.setString("beacon", "on");
+            service.invoke(
+              'update',
+              {
+                "uuid": jsonData['uuid'],
+                "proximity": jsonData['proximity'],
+                "distance": jsonData['distance'],
+              },
+            );
           }
       },
       onDone: () {
