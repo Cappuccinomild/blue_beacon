@@ -65,7 +65,12 @@ Future<void> authInitialize() async {
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
 
-
+  // 이미 프로세스가 실행중인 경우 앱 재실행시
+  // 프로세스 재실행을 막음.
+  if( await service.isRunning() ){
+    print("already running");
+    return;
+  }
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'my_foreground', // id
@@ -182,59 +187,76 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-      'your channel id', 'your channel name',
-      importance: Importance.low,
-      priority: Priority.low,
-      enableVibration: false,
-      ongoing: true,
-      ticker: 'ticker'
-  );
-  var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
-  var platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: iOSPlatformChannelSpecifics);
+  // 비콘 이름 등록
+  // FlutterBackgroundService().invoke("addRegion", {
+  // "name" : "myRegion",
+  // "uuid" : uuid,
+  // });
+
+  // 비콘 이름 수신
+  service.on('addRegion').listen((event) {
+    print(event);
+    BeaconsPlugin.addRegion(event?['name'], event?['uuid']);
+  });
+
+  //비콘 이름 초기화
+  service.on('resetRegion').listen((event) {
+    BeaconsPlugin.clearRegions();
+  });
 
   final timeoutDuration = Duration(seconds: 3);
 
   final event_stream = beaconEventsController.stream;
+  if (service is AndroidServiceInstance) {
+    if (await service.isForegroundService()) {
+      event_stream.timeout(timeoutDuration, onTimeout:(event) {
 
-  event_stream.timeout(timeoutDuration, onTimeout:(event) {
+        print("time_out : $event");
 
-    print("time_out : $event");
-    flutterLocalNotificationsPlugin.show(
-        888, 'STATE', "OFF", platformChannelSpecifics,
-        payload: 'item x');
+        service.setForegroundNotificationInfo(
+          title: "STATE",
+          content: "OFF",
+        );
 
-    BeaconsPlugin.startMonitoring();
-    }).listen(
-          (data) {
+        service.invoke('update',{
+          "uuid": "",
+          "proximity": "",
+          "distance": "",
+        });
 
-          if (data.isNotEmpty) {
-            print("data_recevie : $data");
+      }).listen((data) {
 
-            Map<String, dynamic> jsonData = jsonDecode(data);
+            if (data.isNotEmpty) {
+              print("data_recevie : $data");
 
-            flutterLocalNotificationsPlugin.show(
-                888, 'STATE', jsonData['distance'], platformChannelSpecifics,
-                payload: 'item x');
+              Map<String, dynamic> jsonData = jsonDecode(data);
 
-            service.invoke(
-              'update',
-              {
-                "uuid": jsonData['uuid'],
-                "proximity": jsonData['proximity'],
-                "distance": jsonData['distance'],
-              },
-            );
-          }
-      },
-      onDone: () {
+              service.setForegroundNotificationInfo(
+                title: "STATE",
+                content: jsonData['distance'],
+              );
+
+              service.invoke(
+                'update',
+                {
+                  "name" : jsonData['name'],
+                  "uuid" : jsonData['uuid'],
+                  "proximity" : jsonData['proximity'],
+                  "distance" : jsonData['distance'],
+                },
+              );
+            }
+          },
+          onDone: () {
             print("listen_done");
-      },
-      onError: (error) {
-        print("Error: $error");
-      });
+          },
+          onError: (error) {
+            print("Error: $error");
+          });
+
+    }
+  }
+
 }
 
 class authApp extends StatelessWidget {

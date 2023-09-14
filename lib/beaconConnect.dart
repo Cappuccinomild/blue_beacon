@@ -21,64 +21,26 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
   FlutterLocalNotificationsPlugin();
 
   bool isConnected = false;
+  bool isNear = false;
   int remainingSeconds = 5;
-  bool distance_alarm = false;
   late Timer timer; // 타이머 선언
-  String ID = "";
 
-  Map<String, dynamic> jsonData = {};
 
-  void loadData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    setState(() {
-
-      if ( prefs.getString("beacon") == "on" ){
-        print("on");
-        // 비컨과 스마트폰이 가까운 경우
-        if( prefs.getString("proximity") == "Near" || prefs.getString("proximity") == "Immediate" ){
-          print("Near");
-          String? myID = prefs.getString("nearBeacon");
-          prefs.setString("MyID", myID!);
-
-          print(myID);
-
-          setState(() {
-            isConnected = true;
-          });
-        }
-
-        // 비컨은 존재하지만 거리가 먼 경우
-        // 더욱 가까이 붙여주세요 라는 문구를 표시함
-        else{
-
-          setState(() {
-            distance_alarm = true;
-          });
-
-        }
-
-      }
-    });
-  }
-
-  static void updateID(String ID) async{
-
+  static void updateID(String ID) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
 
     preferences.setString("ID", ID);
-
   }
 
   @override
   void initState() {
     super.initState();
 
+    FlutterBackgroundService().invoke("resetRegion");
+
     // 1초마다 타이머를 체크하여 남은 시간을 갱신
     timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
-      loadData();
       if (isConnected && remainingSeconds > 0) {
-
         setState(() {
           remainingSeconds--;
         });
@@ -89,7 +51,6 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
         Navigator.of(context).pop();
       }
     });
-
   }
 
   @override
@@ -97,7 +58,6 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
     timer.cancel();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -123,64 +83,84 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(
-                    child: CircularProgressIndicator(),
+                    child: CircularProgressIndicator(strokeWidth: 4),
                   );
                 }
 
                 final data = snapshot.data!;
-                String? device = data["uuid"];
-                String? range = data["proximity"];
+                String? uuid = data["uuid"];
+                String? proximity = data["proximity"];
                 String? distance = data["distance"];
+
+                // 내용이 없을 경우
+                if (uuid == "") {
+                  return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 4),
+                  );
+                }
+
+                // proximity == "Immediate" || proximity == "Near"
+                if (proximity == "Immediate") {
+                  // 버튼을 활성화
+                  print("isNear $isNear");
+                  isNear = true;
+                } else {
+                  // 버튼을 비활성화
+                  print("isNear $isNear");
+                  isNear = false;
+                }
+
                 return Column(
                   children: [
-                    Text(device ?? 'Unknown'),
-                    Text(range ?? 'Unknown'),
-                    Text(distance ?? 'Unknown'),
+                    Text(
+                      isNear ? uuid ?? 'Unknown' : "비콘에 가까이 가 주세요" ,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF9BAEC8),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      proximity ?? 'Unknown',
+                      style: const TextStyle(
+                          fontSize: 23,
+                          color: Color(0xFF2b90d9),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      distance ?? 'Unknown',
+                      style: const TextStyle(
+                          fontSize: 19,
+                          color: Color(0xFFd9e1e8),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    ElevatedButton(
+                      onPressed: !isNear
+                          ? null
+                          : () {
+                        setState(() {
+                          FlutterBackgroundService().invoke("addRegion", {
+                            "name" : "myRegion",
+                            "uuid" : uuid,
+                          });
+
+                          if (isConnected) Navigator.of(context).pop();
+                          isConnected = !isConnected;
+                          if (isConnected == false) {
+                            remainingSeconds = 5;
+                          }
+                        });
+                      },
+                      child: Text(
+                        isConnected ? "메인 화면으로" : "연결하기",
+                        style: TextStyle(fontSize: 24),
+                      ),
+                    ),
                   ],
                 );
+
               },
             ),
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isConnected ? Colors.blue : Colors.transparent,
-              ),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (!isConnected)
-                    CircularProgressIndicator(
-                      strokeWidth: 4,
-                    )
-                  else
-                    Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 80, // 아이콘 크기 조절
-                    ),
-                ], // 로딩 애니메이션 표시],
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 30),
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    Navigator.of(context).pop();
-                    isConnected = !isConnected;
-                    if (isConnected == false) {
-                      remainingSeconds = 5;
-                    }
-                  });
-                },
-                child: Text(
-                  isConnected ? "메인 화면으로" : "연결하기",
-                  style: const TextStyle(fontSize: 24),
-                ),
-              ),
-            ),
+
             if (isConnected)
               Text(
                 "남은 시간: $remainingSeconds 초",
