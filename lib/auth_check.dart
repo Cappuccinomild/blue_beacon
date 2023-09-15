@@ -28,7 +28,8 @@ Future<void> authInitialize() async {
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
       Permission.notification,
-      Permission.locationWhenInUse
+      Permission.locationWhenInUse,
+      Permission.bluetoothAdvertise,
     ];
 
     Map<Permission, PermissionStatus> statuses = await permissionsToRequest.request();
@@ -66,11 +67,15 @@ Future<void> initializeService() async {
   final service = FlutterBackgroundService();
 
   // 이미 프로세스가 실행중인 경우 앱 재실행시
-  // 프로세스 재실행을 막음.
+  // 프로세스 재실행을 막음 -> 재실행될 경우 통신이 불가능함
+  // 통신관련 문제해결 필요
+  /*
   if( await service.isRunning() ){
+
     print("already running");
     return;
   }
+   */
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'my_foreground', // id
@@ -157,9 +162,13 @@ void onStart(ServiceInstance service) async {
   BeaconsPlugin.addBeaconLayoutForAndroid(
       "m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
 
+  await BeaconsPlugin.runInBackground(false);
 
-  //BeaconsPlugin.setForegroundScanPeriodForAndroid(
-  //foregroundScanPeriod: 1100, foregroundBetweenScanPeriod: 10);
+  // BeaconsPlugin.setForegroundScanPeriodForAndroid(
+  //      foregroundScanPeriod: 1100, foregroundBetweenScanPeriod: 10);
+
+  //BeaconsPlugin.setBackgroundScanPeriodForAndroid(
+  //    backgroundScanPeriod: 1100, backgroundBetweenScanPeriod: 10);
 
   BeaconsPlugin.startMonitoring();
 
@@ -226,27 +235,27 @@ void onStart(ServiceInstance service) async {
 
       }).listen((data) {
 
-            if (data.isNotEmpty) {
-              print("data_recevie : $data");
+        if (data.isNotEmpty) {
+          print("data_recevie : $data");
 
-              Map<String, dynamic> jsonData = jsonDecode(data);
+          Map<String, dynamic> jsonData = jsonDecode(data);
 
-              service.setForegroundNotificationInfo(
-                title: "STATE",
-                content: jsonData['distance'],
-              );
+          service.setForegroundNotificationInfo(
+            title: "STATE",
+            content: jsonData['distance'],
+          );
 
-              service.invoke(
-                'update',
-                {
-                  "name" : jsonData['name'],
-                  "uuid" : jsonData['uuid'],
-                  "proximity" : jsonData['proximity'],
-                  "distance" : jsonData['distance'],
-                },
-              );
-            }
-          },
+          service.invoke(
+            'update',
+            {
+              "name" : jsonData['name'],
+              "uuid" : jsonData['uuid'],
+              "proximity" : jsonData['proximity'],
+              "distance" : jsonData['distance'],
+            },
+          );
+        }
+      },
           onDone: () {
             print("listen_done");
           },
@@ -256,7 +265,6 @@ void onStart(ServiceInstance service) async {
 
     }
   }
-
 }
 
 class authApp extends StatelessWidget {
