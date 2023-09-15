@@ -1,3 +1,4 @@
+import 'package:blue_beacon/setting.dart';
 import 'package:flutter/material.dart';
 
 import 'dart:async';
@@ -44,7 +45,7 @@ Future<void> authInitialize() async {
     if (allPermissionsGranted) {
       // All permissions are granted, runApp
       await initializeService();
-
+      logger.d('All permissions are granted!');
     } else {
       // 권한 상태를 개별적으로 확인하고 처리할 수도 있습니다.
       if (statuses[Permission.bluetoothScan] != PermissionStatus.granted) {
@@ -151,6 +152,9 @@ void onStart(ServiceInstance service) async {
   BeaconsPlugin.addBeaconLayoutForAndroid(
       "m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
 
+  // ??? 이거 없어짐
+  await BeaconsPlugin.runInBackground(false);
+
   // BeaconsPlugin.setForegroundScanPeriodForAndroid(
   //      foregroundScanPeriod: 1100, foregroundBetweenScanPeriod: 10);
 
@@ -200,6 +204,7 @@ void onStart(ServiceInstance service) async {
     BeaconsPlugin.clearRegions();
   });
 
+  // ???
   service.on('initScan').listen((event) {
 
     final StreamController<String> beaconEventsController =
