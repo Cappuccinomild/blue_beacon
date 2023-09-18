@@ -18,13 +18,11 @@ class BeaconConnectScreen extends StatefulWidget {
 
 class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
-
+      FlutterLocalNotificationsPlugin();
   bool isConnected = false;
   bool isNear = false;
   int remainingSeconds = 5;
   late Timer timer; // 타이머 선언
-
 
   static void updateID(String ID) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -67,7 +65,7 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              margin: EdgeInsets.only(
+              margin: const EdgeInsets.only(
                 bottom: 30,
               ),
               child: Text(
@@ -113,9 +111,9 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
                 return Column(
                   children: [
                     Text(
-                      isNear ? uuid ?? 'Unknown' : "비콘에 가까이 가 주세요" ,
+                      isNear ? (uuid ?? 'Unknown') : ("비콘에 가까이 가 주세요"),
                       style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 20,
                           color: Color(0xFF9BAEC8),
                           fontWeight: FontWeight.bold),
                     ),
@@ -127,40 +125,46 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
                           fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      distance ?? 'Unknown',
+                      '비콘과의 거리: ${distance} M' ?? 'Unknown',
                       style: const TextStyle(
-                          fontSize: 19,
+                          fontSize: 20,
                           color: Color(0xFFd9e1e8),
                           fontWeight: FontWeight.bold),
                     ),
+                    const SizedBox(
+                      height: 30,
+                    ),
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(200, 80),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                          )),
                       onPressed: !isNear
                           ? null
                           : () {
-                        setState(() {
-                          FlutterBackgroundService().invoke("addRegion", {
-                            "name" : "myRegion",
-                            "uuid" : uuid,
-                          });
+                              setState(() {
+                                FlutterBackgroundService().invoke("addRegion", {
+                                  "name": "myRegion",
+                                  "uuid": uuid,
+                                });
 
-                          if (isConnected) Navigator.of(context).pop();
-                          isConnected = !isConnected;
-                          if (isConnected == false) {
-                            remainingSeconds = 5;
-                          }
-                        });
-                      },
+                                if (isConnected) Navigator.of(context).pop();
+                                isConnected = !isConnected;
+                                if (isConnected == false) {
+                                  remainingSeconds = 5;
+                                }
+                              });
+                            },
                       child: Text(
                         isConnected ? "메인 화면으로" : "연결하기",
-                        style: TextStyle(fontSize: 24),
+                        style: const TextStyle(fontSize: 24),
                       ),
                     ),
                   ],
                 );
-
               },
             ),
-
             if (isConnected)
               Text(
                 "남은 시간: $remainingSeconds 초",
