@@ -9,12 +9,13 @@ import 'dart:ui';
 import 'package:beacons_plugin/beacons_plugin.dart';
 
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter/services.dart' show ByteData, rootBundle;
 
 
 import 'package:blue_beacon/test.dart';
@@ -155,6 +156,11 @@ void onStart(ServiceInstance service) async {
   final StreamController<String> beaconEventsController =
   StreamController<String>.broadcast();
 
+  // init player
+  AudioPlayer player = AudioPlayer();
+  player.setVolume(1);
+  player.setSpeed(1);
+
   // Beacon Initialize
   BeaconsPlugin.listenToBeacons(beaconEventsController);
 
@@ -172,9 +178,11 @@ void onStart(ServiceInstance service) async {
   // For flutter prior to version 3.0.0
   // We have to register the plugin manually
 
-  SharedPreferences preferences = await SharedPreferences.getInstance();
-  await preferences.setString("beacon", "init");
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  await pref.setString("beacon", "init");
 
+  // 알람음 링크를 받아옴
+  String? alarmUri = pref.getString("filePath");
   /// OPTIONAL when use custom notification
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
@@ -210,22 +218,12 @@ void onStart(ServiceInstance service) async {
     BeaconsPlugin.clearRegions();
   });
 
-  // ???
-  service.on('initScan').listen((event) {
+  // 소리 등록
+  service.on('setAlarmUri').listen((event) {
 
-    final StreamController<String> beaconEventsController =
-    StreamController<String>.broadcast();
-
-    // Beacon Initialize
-    BeaconsPlugin.listenToBeacons(beaconEventsController);
-
-    BeaconsPlugin.addBeaconLayoutForAndroid(
-        "m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
-
-    BeaconsPlugin.startMonitoring();
-
+    alarmUri = event!['uri'];
+    print("alarmUri : $alarmUri");
   });
-
 
   final timeoutDuration = Duration(seconds: 3);
 
@@ -247,7 +245,8 @@ void onStart(ServiceInstance service) async {
           "distance": "",
         });
 
-
+        flutterLocalNotificationsPlugin.cancel(888);
+        player.stop();
 
       }).listen((data) {
 
@@ -270,6 +269,39 @@ void onStart(ServiceInstance service) async {
               "distance" : jsonData['distance'],
             },
           );
+
+          if (jsonData['name'] == "myRegion") {
+            print("alarmURI : $alarmUri");
+
+            var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
+              'your channel id', 'your channel name',
+              importance: Importance.high,
+              priority: Priority.high,
+              enableVibration: true,
+            );
+            var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
+
+            var platformChannelSpecifics = NotificationDetails(
+                android: androidPlatformChannelSpecifics,
+                iOS: iOSPlatformChannelSpecifics);
+            flutterLocalNotificationsPlugin.show(
+                888, "알람", "비콘 신호를 수신했습니다.", platformChannelSpecifics,
+                payload: '');
+
+
+
+            if(!player.playing){
+              print("player not playing");
+              player.setAsset(alarmUri!); // 선택한 옵션에 따라 다른 mp3 파일 설정
+              player.setLoopMode(LoopMode.one);
+
+              player.play();
+            }
+            else{
+              print("player playing");
+            }
+
+          }
         }
       },
           onDone: () {
@@ -296,8 +328,6 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 
   return true;
 }
-
-
 
 class MyApp extends StatelessWidget {
 

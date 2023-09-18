@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -154,7 +155,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         });
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep');
-                        prefs.setString('filePath', 'none');
+                        prefs.setString('filePath', 'assets/audio/beep.mp3');
+                        FlutterBackgroundService().invoke("setAlarmUri", {
+                          "uri" : "assets/audio/beep.mp3",
+                        });
                         playSound('assets/audio/beep.mp3');
                       },
                     ),
@@ -168,7 +172,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         });
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep2');
-                        prefs.setString('filePath', 'none');
+                        prefs.setString('filePath', 'assets/audio/beep2.mp3');
+                        FlutterBackgroundService().invoke("setAlarmUri", {
+                          "uri" : "beep2",
+                        });
                         playSound('assets/audio/beep2.mp3');
                       },
                     ),
@@ -182,7 +189,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         });
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep3');
-                        prefs.setString('filePath', 'none');
+                        prefs.setString('filePath', 'assets/audio/beep3.mp3');
+                        FlutterBackgroundService().invoke("setAlarmUri", {
+                          "uri" : "assets/audio/beep3.mp3",
+                        });
                         playSound('assets/audio/beep3.mp3');
                       },
                     ),
@@ -196,7 +206,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         });
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'chicken');
-                        prefs.setString('filePath', 'none');
+                        prefs.setString('filePath', 'assets/audio/chicken.mp3');
+                        FlutterBackgroundService().invoke("setAlarmUri", {
+                          "uri" : "assets/audio/chicken.mp3",
+                        });
                         playSound('assets/audio/chicken.mp3');
                       },
                     ),
@@ -210,7 +223,10 @@ class _SettingScreenState extends State<SettingScreen> {
                         });
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'playtime');
-                        prefs.setString('filePath', 'none');
+                        prefs.setString('filePath', 'assets/audio/playtime.mp3');
+                        FlutterBackgroundService().invoke("setAlarmUri", {
+                          "uri" : "assets/audio/playtime.mp3",
+                        });
                         playSound('assets/audio/playtime.mp3');
                       },
                     ),
