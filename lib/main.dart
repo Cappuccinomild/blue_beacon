@@ -34,7 +34,8 @@ Future<void> authInitialize() async {
       Permission.bluetoothConnect,
       Permission.notification,
       Permission.locationWhenInUse,
-      Permission.bluetoothAdvertise,
+      Permission.ignoreBatteryOptimizations,
+      Permission.scheduleExactAlarm,
     ];
 
     Map<Permission, PermissionStatus> statuses = await permissionsToRequest.request();
@@ -62,6 +63,14 @@ Future<void> authInitialize() async {
       }
       if (statuses[Permission.locationWhenInUse] != PermissionStatus.granted) {
         print('Bluetooth locationWhenInUse permission is denied');
+        return;
+      }
+      if (statuses[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
+        print('Bluetooth ignoreBatteryOptimizations permission is denied');
+        return;
+      }
+      if (statuses[Permission.scheduleExactAlarm] != PermissionStatus.granted) {
+        print('Bluetooth scheduleExactAlarm permission is denied');
         return;
       }
     }
@@ -151,9 +160,6 @@ void onStart(ServiceInstance service) async {
 
   BeaconsPlugin.addBeaconLayoutForAndroid(
       "m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
-
-  // ??? 이거 없어짐
-  await BeaconsPlugin.runInBackground(false);
 
   // BeaconsPlugin.setForegroundScanPeriodForAndroid(
   //      foregroundScanPeriod: 1100, foregroundBetweenScanPeriod: 10);
