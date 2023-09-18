@@ -36,7 +36,6 @@ Future<void> authInitialize() async {
       Permission.notification,
       Permission.locationWhenInUse,
       Permission.ignoreBatteryOptimizations,
-      Permission.scheduleExactAlarm,
     ];
 
     Map<Permission, PermissionStatus> statuses = await permissionsToRequest.request();
@@ -70,10 +69,7 @@ Future<void> authInitialize() async {
         print('Bluetooth ignoreBatteryOptimizations permission is denied');
         return;
       }
-      if (statuses[Permission.scheduleExactAlarm] != PermissionStatus.granted) {
-        print('Bluetooth scheduleExactAlarm permission is denied');
-        return;
-      }
+
     }
   }
 }
