@@ -177,8 +177,12 @@ void onStart(ServiceInstance service) async {
   SharedPreferences pref = await SharedPreferences.getInstance();
   await pref.setString("beacon", "init");
 
-  // 알람음 링크를 받아옴
-  String? alarmUri = pref.getString("filePath");
+  String? alarmUri = pref.getString('filePath');
+  alarmUri ??= 'assets/audio/beep.mp3';
+
+  bool? isUserFile = pref.getBool("isUserFile"); // 유저파일 여부 확인
+  isUserFile ??= false;
+
   /// OPTIONAL when use custom notification
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
@@ -214,8 +218,6 @@ void onStart(ServiceInstance service) async {
     BeaconsPlugin.clearRegions();
   });
 
-  // 소리 등록
-  bool isUserFile = false; // 유저파일 여부 확인
   service.on('setAlarmUri').listen((event) {
 
     alarmUri = event!['uri'];
@@ -295,7 +297,7 @@ void onStart(ServiceInstance service) async {
             // 현재 음악이 재생중이 아닐 경우에
             if(!player.playing){
               //유저가 선택한 파일일 경우
-              if(isUserFile){
+              if(isUserFile!){
                 // 새로운 파일 설정
                 player.setFilePath(alarmUri!);
               }
