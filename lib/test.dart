@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:blue_beacon/beaconConnect.dart';
 import 'package:blue_beacon/setting.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -84,59 +85,73 @@ class _TestAppState extends State<TestApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // IconButton(
-              //   onPressed: () {
-              //     // 버튼이 클릭될 때 수행할 작업을 여기에 추가
-              //   },
-              //   icon: Image.asset(
-              //     'assets/bluetoothButton.png', // 사용할 이미지 파일 경로
-              //     width: 500, // 이미지의 너비 설정
-              //     height: 500, // 이미지의 높이 설정
-              //   ), // 아이콘 색상 설정
-              // ),
-              Container(
-                margin: EdgeInsets.only(top: 200, bottom: 30),
-                child: InkWell(
-                  highlightColor: Colors.transparent, // 모서리로 퍼져나가는 이펙트 제거
-                  splashColor: Colors.transparent, // 클릭시 원형 이펙트 제거
+            StreamBuilder<Map<String, dynamic>?>(
+              stream: FlutterBackgroundService().on('update'),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 4),
+                  );
+                }
+                final data = snapshot.data!;
+                String? uuid = data["uuid"];
+                String? proximity = data["proximity"];
+                String? distance = data["distance"];
 
-                  onTap: () {
-                    setState(() {
-                      isBluetoothOn = !isBluetoothOn;
-                    });
-                    initPrefs();
-                  },
-                  child: isBluetoothOn
-                      ? Image.asset(
-                          "assets/image/bluetooth_on.png") // Bluetooth 켜짐 상태 이미지
-                      : Image.asset(
-                          "assets/image/bluetooth_off.png"), // Bluetooth 꺼짐 상태 이미지
-                ),
-              ), // 아이콘 버튼
-              Container(
-                margin: EdgeInsets.only(bottom: 100),
-                child: Column(
+                // 내용이 없을 경우
+                if (uuid == "") {
+                  isBluetoothOn = false;
+                }
+                else{
+                  isBluetoothOn = true;
+                }
+
+                return Column(
                   children: [
-                    Text(
-                      isBluetoothOn ? "비컨이 켜져있습니다" : "비컨이 꺼져있습니다",
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      margin: EdgeInsets.only(top: 200, bottom: 30),
+                      child: InkWell(
+                        highlightColor: Colors.transparent,
+                        splashColor: Colors.transparent,
+                        onTap: () {
+                          setState(() {
+                            isBluetoothOn = !isBluetoothOn;
+                          });
+                          initPrefs();
+                        },
+                        child: isBluetoothOn
+                            ? Image.asset("assets/image/bluetooth_on.png")
+                            : Image.asset("assets/image/bluetooth_off.png"),
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      isBluetoothOn
-                          ? "비컨의 전원을 꺼 알람을 해제하세요"
-                          : "비컨의 전원을 켜 알람을 울려주세요",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black26,
+                    Container(
+                      margin: EdgeInsets.only(bottom: 100),
+                      child: Column(
+                        children: [
+                          Text(
+                            isBluetoothOn ? "비컨이 켜져있습니다" : "비컨이 꺼져있습니다",
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            isBluetoothOn
+                                ? "비컨의 전원을 꺼 알람을 해제하세요"
+                                : "비컨의 전원을 켜 알람을 울려주세요",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black26,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
-                ),
-              ), // 설명 텍스트
+                );
+              }),
+
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,

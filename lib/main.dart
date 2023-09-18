@@ -14,6 +14,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:restart_app/restart_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart' show ByteData, rootBundle;
 
@@ -35,41 +36,55 @@ Future<void> authInitialize() async {
       Permission.bluetoothConnect,
       Permission.notification,
       Permission.locationWhenInUse,
-      Permission.ignoreBatteryOptimizations,
+      Permission.scheduleExactAlarm,
     ];
 
-    Map<Permission, PermissionStatus> statuses = await permissionsToRequest.request();
+    Map<Permission, PermissionStatus> statusesElement = await permissionsToRequest.request();
+    Map<Permission, PermissionStatus> statusesAdvanced = await [Permission.locationAlways
+      , Permission.ignoreBatteryOptimizations].request();
 
     // Check if all permissions are granted
-    bool allPermissionsGranted = statuses.values.every((status) => status.isGranted);
+    bool allElementGranted = statusesElement.values.every((status) => status.isGranted);
+    bool allAdvancedGranted = statusesAdvanced.values.every((status) => status.isGranted);
 
-    if (allPermissionsGranted) {
+    if (allElementGranted) {
       // All permissions are granted, runApp
-      await initializeService();
-      logger.d('All permissions are granted!');
+
+      if (allAdvancedGranted){
+        await initializeService();
+        logger.d('All permissions are granted!');
+      }
+      else{
+        if (statusesElement[Permission.locationAlways] != PermissionStatus.granted) {
+          print('locationAlways permission is denied');
+        }
+        if (statusesElement[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
+          print('ignoreBatteryOptimizations permission is denied');
+        }
+        Restart.restartApp();
+      }
+
     } else {
       // 권한 상태를 개별적으로 확인하고 처리할 수도 있습니다.
-      if (statuses[Permission.bluetoothScan] != PermissionStatus.granted) {
+      if (statusesElement[Permission.bluetoothScan] != PermissionStatus.granted) {
         print('Bluetooth Scan permission is denied');
-        return;
       }
-      if (statuses[Permission.bluetoothConnect] != PermissionStatus.granted) {
+      if (statusesElement[Permission.bluetoothConnect] != PermissionStatus.granted) {
         print('Bluetooth Connect permission is denied');
-        return;
       }
-      if (statuses[Permission.notification] != PermissionStatus.granted) {
+      if (statusesElement[Permission.notification] != PermissionStatus.granted) {
         print('Bluetooth notification permission is denied');
-        return;
       }
-      if (statuses[Permission.locationWhenInUse] != PermissionStatus.granted) {
-        print('Bluetooth locationWhenInUse permission is denied');
-        return;
+      if (statusesElement[Permission.locationWhenInUse] != PermissionStatus.granted) {
+        print('Bluetooth locationAlways permission is denied');
       }
-      if (statuses[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
+      if (statusesElement[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
         print('Bluetooth ignoreBatteryOptimizations permission is denied');
-        return;
       }
-
+      if (statusesElement[Permission.scheduleExactAlarm] != PermissionStatus.granted) {
+        print('scheduleExactAlarm permission is denied');
+      }
+      Restart.restartApp();
     }
   }
 }
@@ -237,8 +252,8 @@ void onStart(ServiceInstance service) async {
         print("time_out : $event");
 
         service.setForegroundNotificationInfo(
-          title: "STATE",
-          content: "OFF",
+          title: "비콘 감지되지 않음",
+          content: "비콘 신호가 감지되지 않습니다.",
         );
 
         service.invoke('update',{
@@ -258,8 +273,8 @@ void onStart(ServiceInstance service) async {
           Map<String, dynamic> jsonData = jsonDecode(data);
 
           service.setForegroundNotificationInfo(
-            title: "STATE",
-            content: jsonData['distance'],
+            title: "비콘 감지됨",
+            content: "비콘 신호를 수신했습니다.",
           );
 
           service.invoke(
@@ -291,7 +306,7 @@ void onStart(ServiceInstance service) async {
 
             // 비콘 신호수신 알람을 발생시킴
             flutterLocalNotificationsPlugin.show(
-                888, "알람", "비콘 신호를 수신했습니다.", platformChannelSpecifics,
+                888, "알람", "등록된 비콘 신호를 수신했습니다.", platformChannelSpecifics,
                 payload: '');
 
             // 현재 음악이 재생중이 아닐 경우에
@@ -318,6 +333,7 @@ void onStart(ServiceInstance service) async {
               title: "비콘 신호 감지",
               content: "비콘을 등록해주세요",
             );
+            player.stop();
           }
         }
       },
