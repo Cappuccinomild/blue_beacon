@@ -27,6 +27,13 @@ class _SettingScreenState extends State<SettingScreen> {
     initPrefs();
   }
 
+  @override
+  void dispose() {
+    // 페이지가 종료될 때 소리를 중지합니다.
+    player.stop();
+    super.dispose();
+  }
+
   Future<void> initPrefs() async {
     // print("initPrefs() 호출");
     logger.d("initPrefs() 호출");
@@ -109,6 +116,8 @@ class _SettingScreenState extends State<SettingScreen> {
       await player.stop(); // 기존 오디오 정지
       await player.setFilePath(filePath); // 새로운 파일 설정
 
+      invokeMessage(filePath!, true);
+
       setState(() {
         selectedOption = strList.last;
       });
@@ -156,9 +165,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep');
                         prefs.setString('filePath', 'assets/audio/beep.mp3');
-                        FlutterBackgroundService().invoke("setAlarmUri", {
-                          "uri" : "assets/audio/beep.mp3",
-                        });
+                        invokeMessage(value!, false);
                         playSound('assets/audio/beep.mp3');
                       },
                     ),
@@ -173,9 +180,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep2');
                         prefs.setString('filePath', 'assets/audio/beep2.mp3');
-                        FlutterBackgroundService().invoke("setAlarmUri", {
-                          "uri" : "beep2",
-                        });
+                        invokeMessage(value!, false);
                         playSound('assets/audio/beep2.mp3');
                       },
                     ),
@@ -190,9 +195,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep3');
                         prefs.setString('filePath', 'assets/audio/beep3.mp3');
-                        FlutterBackgroundService().invoke("setAlarmUri", {
-                          "uri" : "assets/audio/beep3.mp3",
-                        });
+                        invokeMessage(value!, false);
                         playSound('assets/audio/beep3.mp3');
                       },
                     ),
@@ -207,9 +210,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'chicken');
                         prefs.setString('filePath', 'assets/audio/chicken.mp3');
-                        FlutterBackgroundService().invoke("setAlarmUri", {
-                          "uri" : "assets/audio/chicken.mp3",
-                        });
+                        invokeMessage(value!, false);
                         playSound('assets/audio/chicken.mp3');
                       },
                     ),
@@ -224,9 +225,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'playtime');
                         prefs.setString('filePath', 'assets/audio/playtime.mp3');
-                        FlutterBackgroundService().invoke("setAlarmUri", {
-                          "uri" : "assets/audio/playtime.mp3",
-                        });
+                        invokeMessage(value!, false);
                         playSound('assets/audio/playtime.mp3');
                       },
                     ),
@@ -249,4 +248,11 @@ class _SettingScreenState extends State<SettingScreen> {
       ),
     );
   }
+}
+
+void invokeMessage(String uri, bool isUserFile){
+  FlutterBackgroundService().invoke("setAlarmUri", {
+    "uri" : uri,
+    'isUserFile' : isUserFile,
+  });
 }
