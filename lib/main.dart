@@ -17,6 +17,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart' show ByteData, rootBundle;
+import 'package:device_info_plus/device_info_plus.dart';
 
 
 import 'package:blue_beacon/test.dart';
@@ -28,20 +29,32 @@ void main() async {
 }
 
 Future<void> authInitialize() async {
+  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+  var release = int.parse(androidInfo.version.release);
+
+  logger.d("Running on: ${release}");
+
   // Permission Handle
   if (Platform.isAndroid) {
+
     // Prominent disclosure
     final permissionsToRequest = [
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
       Permission.notification,
       Permission.locationWhenInUse,
-      Permission.scheduleExactAlarm,
+      // Permission.scheduleExactAlarm,
     ];
+
+    if (release >= 12) {
+      permissionsToRequest.add(Permission.scheduleExactAlarm);
+    }
 
     Map<Permission, PermissionStatus> statusesElement = await permissionsToRequest.request();
     Map<Permission, PermissionStatus> statusesAdvanced = await [Permission.locationAlways
       , Permission.ignoreBatteryOptimizations].request();
+    // Map<Permission, PermissionStatus> statusesAdvanced = await [Permission.locationAlways].request();
 
     // Check if all permissions are granted
     bool allElementGranted = statusesElement.values.every((status) => status.isGranted);
@@ -58,9 +71,9 @@ Future<void> authInitialize() async {
         if (statusesElement[Permission.locationAlways] != PermissionStatus.granted) {
           print('locationAlways permission is denied');
         }
-        if (statusesElement[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
-          print('ignoreBatteryOptimizations permission is denied');
-        }
+        // if (statusesElement[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
+        //   print('ignoreBatteryOptimizations permission is denied');
+        // }
         Restart.restartApp();
       }
 
@@ -81,9 +94,9 @@ Future<void> authInitialize() async {
       if (statusesElement[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
         print('Bluetooth ignoreBatteryOptimizations permission is denied');
       }
-      if (statusesElement[Permission.scheduleExactAlarm] != PermissionStatus.granted) {
-        print('scheduleExactAlarm permission is denied');
-      }
+      // if (statusesElement[Permission.scheduleExactAlarm] != PermissionStatus.granted) {
+      //   print('scheduleExactAlarm permission is denied');
+      // }
       Restart.restartApp();
     }
   }
@@ -363,6 +376,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 class MyApp extends StatelessWidget {
+
 
   @override
   Widget build(BuildContext context) {
