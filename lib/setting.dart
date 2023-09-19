@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:just_audio/just_audio.dart';
@@ -5,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logger/logger.dart';
 import 'dart:developer';
+import 'package:perfect_volume_control/perfect_volume_control.dart';
 
 var logger = Logger(
   printer: PrettyPrinter(methodCount: 0),
@@ -20,11 +23,15 @@ class _SettingScreenState extends State<SettingScreen> {
   AudioPlayer player = AudioPlayer(); // 오디오 객체 생성
   late SharedPreferences prefs;
   late List<String> strList;
+  late StreamSubscription<double> _subscription;
 
   @override
   void initState() {
     super.initState();
     initPrefs();
+    _subscription = PerfectVolumeControl.stream.listen((value) {
+      logger.d("listener: $value");
+    });
   }
 
   @override
@@ -32,6 +39,7 @@ class _SettingScreenState extends State<SettingScreen> {
     // 페이지가 종료될 때 소리를 중지합니다.
     player.stop();
     super.dispose();
+    _subscription.cancel();
   }
 
   Future<void> initPrefs() async {
@@ -76,23 +84,12 @@ class _SettingScreenState extends State<SettingScreen> {
     // 나머지 초기화 작업 수행
   }
 
-  // Future audioPlayer() async {
-  //   print("audioPlayer() 호출");
-  //   await player.setVolume(10);
-  //   await player.setSpeed(1);
-  //   await player.setAsset('assets/audio/sample.mp3');
-  //   player.play();
-  // }
-
   Future<void> playSound(String audioAsset) async {
     // print("audioPlayer() 호출");
     logger.d("playSound() 호출");
-    await player.setVolume(1);
-    await player.setSpeed(1);
+    var volume = await PerfectVolumeControl.getVolume();
+    PerfectVolumeControl.setVolume(0.5);
     await player.setAsset(audioAsset); // 선택한 옵션에 따라 다른 mp3 파일 설정
-
-    // await initPrefs();
-
     player.play();
   }
 
@@ -224,7 +221,8 @@ class _SettingScreenState extends State<SettingScreen> {
                         });
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'playtime');
-                        prefs.setString('filePath', 'assets/audio/playtime.mp3');
+                        prefs.setString(
+                            'filePath', 'assets/audio/playtime.mp3');
                         invokeMessage("assets/audio/playtime.mp3", false);
                         playSound('assets/audio/playtime.mp3');
                       },
@@ -250,9 +248,9 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 }
 
-void invokeMessage(String uri, bool isUserFile){
+void invokeMessage(String uri, bool isUserFile) {
   FlutterBackgroundService().invoke("setAlarmUri", {
-    "uri" : uri,
-    'isUserFile' : isUserFile,
+    "uri": uri,
+    'isUserFile': isUserFile,
   });
 }

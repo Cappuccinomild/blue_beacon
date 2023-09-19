@@ -10,6 +10,7 @@ import 'package:beacons_plugin/beacons_plugin.dart';
 
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:perfect_volume_control/perfect_volume_control.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
@@ -118,7 +119,7 @@ Future<void> initializeService() async {
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'my_foreground', // id
-      'MY FOREGROUND SERVICE', // title
+      'BLUE BEACON', // title
       description:
       'This channel is used for important notifications.', // description
       importance: Importance.low, // importance must be at low or higher level
@@ -324,6 +325,9 @@ void onStart(ServiceInstance service) async {
 
             // 현재 음악이 재생중이 아닐 경우에
             if(!player.playing){
+              // 볼륨 강제 설정
+              PerfectVolumeControl.setVolume(1);
+
               //유저가 선택한 파일일 경우
               if(isUserFile!){
                 // 새로운 파일 설정

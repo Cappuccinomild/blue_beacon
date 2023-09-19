@@ -113,7 +113,7 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
                     Text(
                       isNear ? (uuid ?? 'Unknown') : ("비콘에 가까이 가 주세요"),
                       style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           color: Color(0xFF9BAEC8),
                           fontWeight: FontWeight.bold),
                     ),
