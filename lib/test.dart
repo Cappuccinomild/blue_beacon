@@ -26,6 +26,9 @@ class _TestAppState extends State<TestApp> {
   late SharedPreferences prefs;
   late List<String> strList;
 
+  bool touchEvent = false;
+  bool screenEvent = false;
+
   @override
   void initState() {
     super.initState();
@@ -37,6 +40,12 @@ class _TestAppState extends State<TestApp> {
     logger.d("initPrefs() 호출");
     // log('initPrefs() 호출');
     prefs = await SharedPreferences.getInstance();
+
+    setState((){
+      touchEvent = prefs.getBool("touchEvent")??false;
+      screenEvent = prefs.getBool("screenEvent")??false;
+      }
+    );
 
     // if (prefs.getBool('isUserFile') == false) {
     //   setState(() {
@@ -78,9 +87,73 @@ class _TestAppState extends State<TestApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        // appBar: AppBar(
-        //   title: Text('아이콘 버튼 예제'),
-        // ),
+        appBar: AppBar(
+          title: Text('아이콘 버튼 예제'),
+          // 메뉴 아이콘 추가
+          leading: Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
+            },
+          ),
+        ),
+        drawer: Drawer(
+          // Drawer 위젯 추가
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ),
+                child: Text(
+                  '알람 미적용 조건 설정',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+              ListTile(
+                title: Text('화면 사용여부'),
+                subtitle: screenEvent
+                    ? Text('화면이 켜져있을때 알람을 무시합니다.')
+                    : Text('화면이 켜져있어도 알람을 울립니다.'),
+                trailing: Switch(
+                  value: screenEvent,
+                  onChanged: (value) {
+                    setState(() {
+                      screenEvent = value;
+                      prefs.setBool("screenEvent", screenEvent);
+                      FlutterBackgroundService().invoke("setTouchEvent", {"value":screenEvent});
+                    });
+                  },
+                ),
+              ),
+              ListTile(
+                title: Text('터치 사용여부'),
+                subtitle: touchEvent
+                    ? Text('최근에 화면을 터치했다면 알람을 무시합니다.')
+                    : Text('60초간 화면을 터치하지 않으면 알람을 울립니다.'),
+                trailing: Switch(
+                  value: touchEvent,
+                  onChanged: (value) {
+                    setState(() {
+                      touchEvent = value;
+                      prefs.setBool("touchEvent", touchEvent);
+                      FlutterBackgroundService().invoke("setScreenEvent", {"value":touchEvent});
+                    });
+                  },
+                ),
+              ),
+              // 필요한 만큼 메뉴 항목을 추가할 수 있습니다.
+            ],
+          ),
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,

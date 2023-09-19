@@ -22,6 +22,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 
 
 import 'package:blue_beacon/test.dart';
+import 'package:wakelock/wakelock.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +77,7 @@ Future<void> authInitialize() async {
           print('ignoreBatteryOptimizations permission is denied');
         }
         Restart.restartApp();
+        return;
       }
 
     } else {
@@ -99,6 +101,7 @@ Future<void> authInitialize() async {
         print('scheduleExactAlarm permission is denied');
       }
       Restart.restartApp();
+      return;
     }
   }
 }
@@ -254,9 +257,24 @@ void onStart(ServiceInstance service) async {
     print("alarmUri : $alarmUri");
   });
 
+  bool? screenEvent = pref.getBool("screenEvent");
+  service.on('setScreenEvent').listen((event) {
+    screenEvent = event!['value'];
+    print(screenEvent);
+  });
+
+  bool? touchEvent = pref.getBool("touchEvent");
+  service.on('setTouchEvent').listen((event) {
+    touchEvent = event!['value'];
+    print(touchEvent);
+  });
 
 
   final timeoutDuration = Duration(seconds: 3);
+
+  Wakelock.toggle;
+
+  StreamController<bool> touchEventStreamController = StreamController<bool>();
 
   final event_stream = beaconEventsController.stream;
   if (service is AndroidServiceInstance) {
@@ -282,7 +300,7 @@ void onStart(ServiceInstance service) async {
       }).listen((data) {
 
         if (data.isNotEmpty) {
-          print("data_recevie : $data");
+          // print("data_recevie : $data");
 
           Map<String, dynamic> jsonData = jsonDecode(data);
 
