@@ -17,6 +17,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart' show ByteData, rootBundle;
 
+
 import 'package:blue_beacon/test.dart';
 
 void main() async {
@@ -37,12 +38,10 @@ Future<void> authInitialize() async {
       Permission.ignoreBatteryOptimizations,
     ];
 
-    Map<Permission, PermissionStatus> statuses =
-        await permissionsToRequest.request();
+    Map<Permission, PermissionStatus> statuses = await permissionsToRequest.request();
 
     // Check if all permissions are granted
-    bool allPermissionsGranted =
-        statuses.values.every((status) => status.isGranted);
+    bool allPermissionsGranted = statuses.values.every((status) => status.isGranted);
 
     if (allPermissionsGranted) {
       // All permissions are granted, runApp
@@ -66,11 +65,11 @@ Future<void> authInitialize() async {
         print('Bluetooth locationWhenInUse permission is denied');
         return;
       }
-      if (statuses[Permission.ignoreBatteryOptimizations] !=
-          PermissionStatus.granted) {
+      if (statuses[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
         print('Bluetooth ignoreBatteryOptimizations permission is denied');
         return;
       }
+
     }
   }
 }
@@ -88,18 +87,18 @@ Future<void> initializeService() async {
     return;
   }
    */
-
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'my_foreground', // id
       'MY FOREGROUND SERVICE', // title
       description:
-          'This channel is used for important notifications.', // description
+      'This channel is used for important notifications.', // description
       importance: Importance.low, // importance must be at low or higher level
-      enableVibration: false);
+      enableVibration: false
+  );
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   if (Platform.isIOS || Platform.isAndroid) {
     await flutterLocalNotificationsPlugin.initialize(
@@ -110,9 +109,10 @@ Future<void> initializeService() async {
     );
   }
 
+
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   await service.configure(
@@ -150,7 +150,7 @@ void onStart(ServiceInstance service) async {
   // Only available for flutter 3.0.0 and later
   DartPluginRegistrant.ensureInitialized();
   final StreamController<String> beaconEventsController =
-      StreamController<String>.broadcast();
+  StreamController<String>.broadcast();
 
   // init player
   AudioPlayer player = AudioPlayer();
@@ -185,7 +185,7 @@ void onStart(ServiceInstance service) async {
 
   /// OPTIONAL when use custom notification
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
@@ -219,17 +219,21 @@ void onStart(ServiceInstance service) async {
   });
 
   service.on('setAlarmUri').listen((event) {
+
     alarmUri = event!['uri'];
     isUserFile = event['isUserFile'];
     print("alarmUri : $alarmUri");
   });
+
+
 
   final timeoutDuration = Duration(seconds: 3);
 
   final event_stream = beaconEventsController.stream;
   if (service is AndroidServiceInstance) {
     if (await service.isForegroundService()) {
-      event_stream.timeout(timeoutDuration, onTimeout: (event) {
+      event_stream.timeout(timeoutDuration, onTimeout:(event) {
+
         print("time_out : $event");
 
         service.setForegroundNotificationInfo(
@@ -237,7 +241,7 @@ void onStart(ServiceInstance service) async {
           content: "OFF",
         );
 
-        service.invoke('update', {
+        service.invoke('update',{
           "uuid": "",
           "proximity": "",
           "distance": "",
@@ -245,7 +249,9 @@ void onStart(ServiceInstance service) async {
 
         flutterLocalNotificationsPlugin.cancel(888);
         player.stop();
+
       }).listen((data) {
+
         if (data.isNotEmpty) {
           print("data_recevie : $data");
 
@@ -259,10 +265,10 @@ void onStart(ServiceInstance service) async {
           service.invoke(
             'update',
             {
-              "name": jsonData['name'],
-              "uuid": jsonData['uuid'],
-              "proximity": jsonData['proximity'],
-              "distance": jsonData['distance'],
+              "name" : jsonData['name'],
+              "uuid" : jsonData['uuid'],
+              "proximity" : jsonData['proximity'],
+              "distance" : jsonData['distance'],
             },
           );
 
@@ -271,10 +277,8 @@ void onStart(ServiceInstance service) async {
             print("alarmURI : $alarmUri");
 
             // 진동을 울리기위한 프로세스
-            var androidPlatformChannelSpecifics =
-                const AndroidNotificationDetails(
-              'your channel id',
-              'your channel name',
+            var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
+              'your channel id', 'your channel name',
               importance: Importance.high,
               priority: Priority.high,
               enableVibration: true,
@@ -291,12 +295,13 @@ void onStart(ServiceInstance service) async {
                 payload: '');
 
             // 현재 음악이 재생중이 아닐 경우에
-            if (!player.playing) {
+            if(!player.playing){
               //유저가 선택한 파일일 경우
-              if (isUserFile!) {
+              if(isUserFile!){
                 // 새로운 파일 설정
                 player.setFilePath(alarmUri!);
-              } else {
+              }
+              else{
                 // mp3 파일 설정
                 player.setAsset(alarmUri!);
               }
@@ -304,21 +309,25 @@ void onStart(ServiceInstance service) async {
               player.setLoopMode(LoopMode.one);
               player.play();
             }
+
           }
 
           // 비콘이 등록되지 않은 경우 비콘 등록안내 메세지를 발생시킴
-          else {
+          else{
             service.setForegroundNotificationInfo(
               title: "비콘 신호 감지",
               content: "비콘을 등록해주세요",
             );
           }
         }
-      }, onDone: () {
-        print("listen_done");
-      }, onError: (error) {
-        print("Error: $error");
-      });
+      },
+          onDone: () {
+            print("listen_done");
+          },
+          onError: (error) {
+            print("Error: $error");
+          });
+
     }
   }
 }
@@ -338,6 +347,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -348,3 +358,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
