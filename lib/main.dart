@@ -16,13 +16,13 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:restart_app/restart_app.dart';
+import 'package:screen_state/screen_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart' show ByteData, rootBundle;
 import 'package:device_info_plus/device_info_plus.dart';
 
 
 import 'package:blue_beacon/test.dart';
-import 'package:wakelock/wakelock.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -183,6 +183,8 @@ void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   final StreamController<String> beaconEventsController =
   StreamController<String>.broadcast();
+  Timer? _timer;
+  var alarm_duration = Duration(minutes: 1);
 
   // init player
   AudioPlayer player = AudioPlayer();
@@ -257,13 +259,22 @@ void onStart(ServiceInstance service) async {
     print("alarmUri : $alarmUri");
   });
 
-  bool? screenEvent = pref.getBool("screenEvent");
+  service.on('setDuration').listen((event){
+    alarm_duration = Duration(seconds: event!['seconds']);
+  });
+
+  // 화면이나 1분내 터치 유무를 확인해 알람을 울리지 않도록 함.
+  // 비콘이 등록된 경우 AND (screenEventFlag OR touchEventFlag)
+  // screenEventFlag = !(screenEvent and screenOn)
+
+  bool screenEvent = pref.getBool("screenEvent")??false;
+  bool touchEventFlag = true;
   service.on('setScreenEvent').listen((event) {
     screenEvent = event!['value'];
     print(screenEvent);
   });
 
-  bool? touchEvent = pref.getBool("touchEvent");
+  bool touchEvent = pref.getBool("touchEvent")??false;
   service.on('setTouchEvent').listen((event) {
     touchEvent = event!['value'];
     print(touchEvent);
@@ -271,8 +282,30 @@ void onStart(ServiceInstance service) async {
 
 
   final timeoutDuration = Duration(seconds: 3);
+  //최초 실행시에는 화면이 켜져있는것으로 간주
+  bool screenOn = true;
+  bool screenEventFlag = !(screenEvent && screenOn);
+  final StreamSubscription<ScreenStateEvent> _subscription = Screen().screenStateStream!.listen((event) {
 
-  Wakelock.toggle;
+    if(event.toString() == "ScreenStateEvent.SCREEN_ON"){
+      screenOn = true;
+      screenEventFlag = !(screenEvent && screenOn);
+
+      if (_timer != null && _timer!.isActive) {
+        _timer!.cancel();
+      }
+    }
+    if(event.toString() == "ScreenStateEvent.SCREEN_OFF"){
+      //screenOn = false;
+      _timer = Timer(alarm_duration, () {
+        // 1분 후에 screenOn을 false로 설정합니다.
+        screenOn = false;
+        screenEventFlag = !(screenEvent && screenOn);
+      });
+
+    }
+    print(screenEventFlag);
+  });
 
   StreamController<bool> touchEventStreamController = StreamController<bool>();
 
@@ -320,7 +353,7 @@ void onStart(ServiceInstance service) async {
           );
 
           // 비콘이 등록된 경우 알람을 발생시킴
-          if (jsonData['name'] == "myRegion") {
+          if (jsonData['name'] == "myRegion" && screenEventFlag) {
             print("alarmURI : $alarmUri");
 
             // 진동을 울리기위한 프로세스
@@ -344,7 +377,7 @@ void onStart(ServiceInstance service) async {
             // 현재 음악이 재생중이 아닐 경우에
             if(!player.playing){
               // 볼륨 강제 설정
-              PerfectVolumeControl.setVolume(1);
+              PerfectVolumeControl.setVolume(0.2);
 
               //유저가 선택한 파일일 경우
               if(isUserFile!){

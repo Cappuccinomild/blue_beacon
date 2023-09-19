@@ -35,6 +35,18 @@ class _TestAppState extends State<TestApp> {
     initPrefs();
   }
 
+  double selectedSeconds = 300.0; // 초 단위로 초기 선택값 (5분)
+
+// 초를 분으로 변환하는 함수
+  int secondsToMinutes(double seconds) {
+    return (seconds / 60).floor();
+  }
+
+// 분을 초로 변환하는 함수
+  double remainMinute(double seconds) {
+    return seconds % 60;
+  }
+
   Future<void> initPrefs() async {
     // print("initPrefs() 호출");
     logger.d("initPrefs() 호출");
@@ -44,6 +56,7 @@ class _TestAppState extends State<TestApp> {
     setState((){
       touchEvent = prefs.getBool("touchEvent")??false;
       screenEvent = prefs.getBool("screenEvent")??false;
+      selectedSeconds = prefs.getDouble("selectedSeconds")??1;
       }
     );
 
@@ -129,7 +142,7 @@ class _TestAppState extends State<TestApp> {
                     setState(() {
                       screenEvent = value;
                       prefs.setBool("screenEvent", screenEvent);
-                      FlutterBackgroundService().invoke("setTouchEvent", {"value":screenEvent});
+                      FlutterBackgroundService().invoke("setScreenEvent", {"value":screenEvent});
                     });
                   },
                 ),
@@ -145,10 +158,28 @@ class _TestAppState extends State<TestApp> {
                     setState(() {
                       touchEvent = value;
                       prefs.setBool("touchEvent", touchEvent);
-                      FlutterBackgroundService().invoke("setScreenEvent", {"value":touchEvent});
+                      FlutterBackgroundService().invoke("setTouchEvent", {"value":touchEvent});
                     });
                   },
                 ),
+              ),
+              ListTile(
+                title: Text('시간 선택'),
+                subtitle: Text('선택된 시간: ${secondsToMinutes(selectedSeconds)} 분 ${remainMinute(selectedSeconds)}초'),
+              ),
+              Slider(
+                value: selectedSeconds,
+                min: 0,
+                max: 600, // 10분을 초로 변환
+                divisions: 600, // 1초 간격으로 분할
+                onChanged: (value) {
+                  setState(() {
+                    selectedSeconds = value;
+                    prefs.setDouble("selectedSeconds", selectedSeconds);
+                    FlutterBackgroundService().invoke("setDuration", {"seconds":selectedSeconds});
+
+                  });
+                },
               ),
               // 필요한 만큼 메뉴 항목을 추가할 수 있습니다.
             ],
