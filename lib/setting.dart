@@ -165,7 +165,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep');
                         prefs.setString('filePath', 'assets/audio/beep.mp3');
-                        invokeMessage(value!, false);
+                        invokeMessage("assets/audio/beep.mp3", false);
                         playSound('assets/audio/beep.mp3');
                       },
                     ),
@@ -180,7 +180,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep2');
                         prefs.setString('filePath', 'assets/audio/beep2.mp3');
-                        invokeMessage(value!, false);
+                        invokeMessage("assets/audio/beep2.mp3", false);
                         playSound('assets/audio/beep2.mp3');
                       },
                     ),
@@ -195,7 +195,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'beep3');
                         prefs.setString('filePath', 'assets/audio/beep3.mp3');
-                        invokeMessage(value!, false);
+                        invokeMessage("assets/audio/beep3.mp3", false);
                         playSound('assets/audio/beep3.mp3');
                       },
                     ),
@@ -210,7 +210,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'chicken');
                         prefs.setString('filePath', 'assets/audio/chicken.mp3');
-                        invokeMessage(value!, false);
+                        invokeMessage("assets/audio/chicken.mp3", false);
                         playSound('assets/audio/chicken.mp3');
                       },
                     ),
@@ -225,7 +225,7 @@ class _SettingScreenState extends State<SettingScreen> {
                         prefs.setBool('isUserFile', false);
                         prefs.setString('selectedSound', 'playtime');
                         prefs.setString('filePath', 'assets/audio/playtime.mp3');
-                        invokeMessage(value!, false);
+                        invokeMessage("assets/audio/playtime.mp3", false);
                         playSound('assets/audio/playtime.mp3');
                       },
                     ),
