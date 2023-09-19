@@ -71,9 +71,9 @@ Future<void> authInitialize() async {
         if (statusesElement[Permission.locationAlways] != PermissionStatus.granted) {
           print('locationAlways permission is denied');
         }
-        // if (statusesElement[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
-        //   print('ignoreBatteryOptimizations permission is denied');
-        // }
+        if (statusesElement[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
+          print('ignoreBatteryOptimizations permission is denied');
+        }
         Restart.restartApp();
       }
 
@@ -94,9 +94,9 @@ Future<void> authInitialize() async {
       if (statusesElement[Permission.ignoreBatteryOptimizations] != PermissionStatus.granted) {
         print('Bluetooth ignoreBatteryOptimizations permission is denied');
       }
-      // if (statusesElement[Permission.scheduleExactAlarm] != PermissionStatus.granted) {
-      //   print('scheduleExactAlarm permission is denied');
-      // }
+      if (statusesElement[Permission.scheduleExactAlarm] != PermissionStatus.granted) {
+        print('scheduleExactAlarm permission is denied');
+      }
       Restart.restartApp();
     }
   }
