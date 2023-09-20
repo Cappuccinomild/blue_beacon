@@ -9,6 +9,7 @@ import 'dart:ui';
 import 'package:beacons_plugin/beacons_plugin.dart';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -66,6 +67,13 @@ Future<void> authInitialize() async {
       // All permissions are granted, runApp
 
       if (allAdvancedGranted){
+        while(await FlutterBackgroundService().isRunning()){
+          FlutterBackgroundService().invoke("stopService");
+          Fluttertoast.showToast(
+            msg: "백그라운드 프로세스 재시작",
+            toastLength: Toast.LENGTH_SHORT,
+          );
+        }
         await initializeService();
         logger.d('All permissions are granted!');
       }
@@ -360,60 +368,65 @@ void onStart(ServiceInstance service) async {
             },
           );
 
-          // 비콘이 등록되지 않은 경우 비콘 등록안내 메세지를 발생시킴
-          if (jsonData['name'] != "myRegion") {
-            service.setForegroundNotificationInfo(
-              title: "비콘 신호 감지",
-              content: "비콘을 등록해주세요",
-            );
-            player.stop();
-          }
+          if(jsonData['name'] == "myRegion"){
 
-          if(jsonData['name'] == "myRegion" && screenEventFlag){
-            print("alarmURI : $alarmUri");
+            // 유저가 스마트폰을 사용중이 아님
+            if(screenEventFlag){
 
-            // 진동을 울리기위한 프로세스
-            var androidPlatformChannelSpecifics =
-                const AndroidNotificationDetails(
-              'your channel id',
-              'your channel name',
-              importance: Importance.high,
-              priority: Priority.high,
-              enableVibration: true,
-            );
-            var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
+              print("alarmURI : $alarmUri");
 
-            var platformChannelSpecifics = NotificationDetails(
-                android: androidPlatformChannelSpecifics,
-                iOS: iOSPlatformChannelSpecifics);
+              // 진동을 울리기위한 프로세스
+              var androidPlatformChannelSpecifics =
+              const AndroidNotificationDetails(
+                'your channel id',
+                'your channel name',
+                importance: Importance.high,
+                priority: Priority.high,
+                enableVibration: true,
+              );
+              var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
 
-            // 비콘 신호수신 알람을 발생시킴
-            flutterLocalNotificationsPlugin.show(
-                888, "알람", "등록된 비콘 신호를 수신했습니다.", platformChannelSpecifics,
-                payload: '');
+              var platformChannelSpecifics = NotificationDetails(
+                  android: androidPlatformChannelSpecifics,
+                  iOS: iOSPlatformChannelSpecifics);
 
-            // 현재 음악이 재생중이 아닐 경우에
-            if (!player.playing) {
-              // 볼륨 강제 설정
-              PerfectVolumeControl.setVolume(0.2);
+              // 비콘 신호수신 알람을 발생시킴
+              flutterLocalNotificationsPlugin.show(
+                  888, "알람", "등록된 비콘 신호를 수신했습니다.", platformChannelSpecifics,
+                  payload: '');
 
-              //유저가 선택한 파일일 경우
-              if (isUserFile!) {
-                // 새로운 파일 설정
-                player.setFilePath(alarmUri!);
-              } else {
-                // mp3 파일 설정
-                player.setAsset(alarmUri!);
+              // 현재 음악이 재생중이 아닐 경우에
+              if (!player.playing) {
+                // 볼륨 강제 설정
+                PerfectVolumeControl.setVolume(0.2);
+
+                //유저가 선택한 파일일 경우
+                if (isUserFile!) {
+                  // 새로운 파일 설정
+                  player.setFilePath(alarmUri!);
+                } else {
+                  // mp3 파일 설정
+                  player.setAsset(alarmUri!);
+                }
+                // 선택한 파일 무한반복
+                player.setLoopMode(LoopMode.one);
+                player.play();
               }
-              // 선택한 파일 무한반복
-              player.setLoopMode(LoopMode.one);
-              player.play();
+
             }
+            else{
+              service.setForegroundNotificationInfo(
+                title: "등록된 비콘 신호 감지",
+                content: "현재 스마트폰 사용중.",
+              );
+              player.stop();
+            }
+
           }
           else{
             service.setForegroundNotificationInfo(
-              title: "비콘 신호 감지",
-              content: "등록된 비콘 신호를 수신했습니다.",
+              title: "등록되지 않은 비콘 신호 감지",
+              content: "비콘을 등록해주세요",
             );
             player.stop();
           }
@@ -445,7 +458,6 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 }
 
 class MyApp extends StatelessWidget {
-
 
   @override
   Widget build(BuildContext context) {
