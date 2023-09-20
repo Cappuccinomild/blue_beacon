@@ -54,12 +54,11 @@ class _TestAppState extends State<TestApp> {
     // log('initPrefs() 호출');
     prefs = await SharedPreferences.getInstance();
 
-    setState((){
-      touchEvent = prefs.getBool("touchEvent")??false;
-      screenEvent = prefs.getBool("screenEvent")??false;
-      selectedSeconds = prefs.getDouble("selectedSeconds")??1;
-      }
-    );
+    setState(() {
+      touchEvent = prefs.getBool("touchEvent") ?? false;
+      screenEvent = prefs.getBool("screenEvent") ?? false;
+      selectedSeconds = prefs.getDouble("selectedSeconds") ?? 1;
+    });
 
     // if (prefs.getBool('isUserFile') == false) {
     //   setState(() {
@@ -156,7 +155,8 @@ class _TestAppState extends State<TestApp> {
                     setState(() {
                       screenEvent = value;
                       prefs.setBool("screenEvent", screenEvent);
-                      FlutterBackgroundService().invoke("setScreenEvent", {"value":screenEvent});
+                      FlutterBackgroundService()
+                          .invoke("setScreenEvent", {"value": screenEvent});
                     });
                   },
                 ),
@@ -164,7 +164,8 @@ class _TestAppState extends State<TestApp> {
                   setState(() {
                     screenEvent = !screenEvent;
                     prefs.setBool("screenEvent", screenEvent);
-                    FlutterBackgroundService().invoke("setScreenEvent", {"value": screenEvent});
+                    FlutterBackgroundService()
+                        .invoke("setScreenEvent", {"value": screenEvent});
                   });
                 },
               ),
@@ -187,7 +188,8 @@ class _TestAppState extends State<TestApp> {
                     setState(() {
                       touchEvent = value;
                       prefs.setBool("touchEvent", touchEvent);
-                      FlutterBackgroundService().invoke("setTouchEvent", {"value":touchEvent});
+                      FlutterBackgroundService()
+                          .invoke("setTouchEvent", {"value": touchEvent});
                     });
                   },
                 ),
@@ -195,7 +197,8 @@ class _TestAppState extends State<TestApp> {
                   setState(() {
                     touchEvent = !touchEvent;
                     prefs.setBool("set", touchEvent);
-                    FlutterBackgroundService().invoke("setTouchEvent", {"value": touchEvent});
+                    FlutterBackgroundService()
+                        .invoke("setTouchEvent", {"value": touchEvent});
                   });
                 },
               ),
@@ -203,21 +206,27 @@ class _TestAppState extends State<TestApp> {
               ListTile(
                 title: const Padding(
                   padding: EdgeInsets.only(bottom: 5),
-                  child: Text('시간 선택', style: TextStyle(fontSize: 16),),
+                  child: Text(
+                    '시간 선택',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
-                subtitle: Text('선택된 시간: ${secondsToMinutes(selectedSeconds)} 분 ${remainMinute(selectedSeconds)}초'),
+                subtitle: Text(
+                    '선택된 시간: ${secondsToMinutes(selectedSeconds)} 분 ${remainMinute(selectedSeconds)}초'),
               ),
               Slider(
                 value: selectedSeconds,
                 min: 0,
-                max: 600, // 10분을 초로 변환
-                divisions: 600, // 1초 간격으로 분할
+                max: 600,
+                // 10분을 초로 변환
+                divisions: 600,
+                // 1초 간격으로 분할
                 onChanged: (value) {
                   setState(() {
                     selectedSeconds = value;
                     prefs.setDouble("selectedSeconds", selectedSeconds);
-                    FlutterBackgroundService().invoke("setDuration", {"seconds":selectedSeconds});
-
+                    FlutterBackgroundService()
+                        .invoke("setDuration", {"seconds": selectedSeconds});
                   });
                 },
               ),
@@ -230,80 +239,78 @@ class _TestAppState extends State<TestApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-            StreamBuilder<Map<String, dynamic>?>(
-              stream: FlutterBackgroundService().on('update'),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(strokeWidth: 4),
-                  );
-                }
-                final data = snapshot.data!;
-                String? uuid = data["uuid"];
-                String? proximity = data["proximity"];
-                String? distance = data["distance"];
+              StreamBuilder<Map<String, dynamic>?>(
+                  stream: FlutterBackgroundService().on('update'),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator(strokeWidth: 4),
+                      );
+                    }
+                    final data = snapshot.data!;
+                    String? uuid = data["uuid"];
+                    String? proximity = data["proximity"];
+                    String? distance = data["distance"];
 
-                // 내용이 없을 경우
-                if (uuid == "") {
-                  isBluetoothOn = false;
-                }
-                else{
-                  isBluetoothOn = true;
-                }
+                    // 내용이 없을 경우
+                    if (uuid == "") {
+                      isBluetoothOn = false;
+                    } else {
+                      isBluetoothOn = true;
+                    }
 
-                return Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 180, bottom: 30),
-                      child: InkWell(
-                        highlightColor: Colors.transparent,
-                        splashColor: Colors.transparent,
-                        onTap: () {
-                          setState(() {
-                            isBluetoothOn = !isBluetoothOn;
-                          });
-                          initPrefs();
-                        },
-                          child: isBluetoothOn
-                              ? SvgPicture.asset(
-                            'assets/image/bluetooth_on.svg',
-                            height: 170,
-                            width: 170,
-                          )
-                              : SvgPicture.asset(
-                            'assets/image/bluetooth_off.svg',
-                            height: 170,
-                            width: 170,
-                          )
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 80),
-                      child: Column(
-                        children: [
-                          Text(
-                            isBluetoothOn ? "비컨이 켜져있습니다" : "비컨이 꺼져있습니다",
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    return Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 180, bottom: 30),
+                          child: InkWell(
+                              highlightColor: Colors.transparent,
+                              splashColor: Colors.transparent,
+                              onTap: () {
+                                setState(() {
+                                  isBluetoothOn = !isBluetoothOn;
+                                });
+                                initPrefs();
+                              },
+                              child: isBluetoothOn
+                                  ? SvgPicture.asset(
+                                      'assets/image/bluetooth_on.svg',
+                                      height: 170,
+                                      width: 170,
+                                    )
+                                  : SvgPicture.asset(
+                                      'assets/image/bluetooth_off.svg',
+                                      height: 170,
+                                      width: 170,
+                                    )),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 80),
+                          child: Column(
+                            children: [
+                              Text(
+                                isBluetoothOn ? "비컨이 켜져있습니다" : "비컨이 꺼져있습니다",
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                isBluetoothOn
+                                    ? "비컨의 전원을 꺼 알람을 해제하세요"
+                                    : "비컨의 전원을 켜 알람을 울려주세요",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black26,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 5),
-                          Text(
-                            isBluetoothOn
-                                ? "비컨의 전원을 꺼 알람을 해제하세요"
-                                : "비컨의 전원을 켜 알람을 울려주세요",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black26,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              }),
+                        ),
+                      ],
+                    );
+                  }),
 
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
