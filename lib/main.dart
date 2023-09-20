@@ -267,24 +267,32 @@ void onStart(ServiceInstance service) async {
   // 비콘이 등록된 경우 AND (screenEventFlag OR touchEventFlag)
   // screenEventFlag = !(screenEvent and screenOn)
 
+  //최초 실행시에는 화면이 켜져있는것으로 간주
+  bool screenOn = true;
+
   bool screenEvent = pref.getBool("screenEvent")??false;
-  bool touchEventFlag = true;
+  bool screenEventFlag = !(screenEvent && screenOn);
+
   service.on('setScreenEvent').listen((event) {
     screenEvent = event!['value'];
-    print(screenEvent);
+    screenEventFlag = !(screenEvent && screenOn);
+    print("screenEventFlag : $screenEventFlag");
   });
 
+  // 최초 실행시에는 터치 이벤트가 존재했던것으로 간주
+  bool touchOn = true;
+
   bool touchEvent = pref.getBool("touchEvent")??false;
+  bool touchEventFlag = !(touchEvent && touchOn);
+
   service.on('setTouchEvent').listen((event) {
     touchEvent = event!['value'];
+    touchEventFlag = !(touchEvent && touchOn);
     print(touchEvent);
   });
 
-
   final timeoutDuration = Duration(seconds: 3);
-  //최초 실행시에는 화면이 켜져있는것으로 간주
-  bool screenOn = true;
-  bool screenEventFlag = !(screenEvent && screenOn);
+
   final StreamSubscription<ScreenStateEvent> _subscription = Screen().screenStateStream!.listen((event) {
 
     if(event.toString() == "ScreenStateEvent.SCREEN_ON"){
@@ -304,7 +312,7 @@ void onStart(ServiceInstance service) async {
       });
 
     }
-    print(screenEventFlag);
+    print("screenEventFlag : $screenEventFlag");
   });
 
   StreamController<bool> touchEventStreamController = StreamController<bool>();
@@ -352,62 +360,60 @@ void onStart(ServiceInstance service) async {
             },
           );
 
-          // 비콘이 등록된 경우 알람을 발생시킴
-          if (jsonData['name'] == "myRegion") {
-
-            service.setForegroundNotificationInfo(
-              title: "비콘 신호 감지",
-              content: "등록된 비콘 신호를 수신했습니다.",
-            );
-
-            if(screenEventFlag){
-              print("alarmURI : $alarmUri");
-
-              // 진동을 울리기위한 프로세스
-              var androidPlatformChannelSpecifics =
-                  const AndroidNotificationDetails(
-                'your channel id',
-                'your channel name',
-                importance: Importance.high,
-                priority: Priority.high,
-                enableVibration: true,
-              );
-              var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
-
-              var platformChannelSpecifics = NotificationDetails(
-                  android: androidPlatformChannelSpecifics,
-                  iOS: iOSPlatformChannelSpecifics);
-
-              // 비콘 신호수신 알람을 발생시킴
-              flutterLocalNotificationsPlugin.show(
-                  888, "알람", "등록된 비콘 신호를 수신했습니다.", platformChannelSpecifics,
-                  payload: '');
-
-              // 현재 음악이 재생중이 아닐 경우에
-              if (!player.playing) {
-                // 볼륨 강제 설정
-                PerfectVolumeControl.setVolume(0.2);
-
-                //유저가 선택한 파일일 경우
-                if (isUserFile!) {
-                  // 새로운 파일 설정
-                  player.setFilePath(alarmUri!);
-                } else {
-                  // mp3 파일 설정
-                  player.setAsset(alarmUri!);
-                }
-                // 선택한 파일 무한반복
-                player.setLoopMode(LoopMode.one);
-                player.play();
-              }
-            }
-          }
-
           // 비콘이 등록되지 않은 경우 비콘 등록안내 메세지를 발생시킴
-          else{
+          if (jsonData['name'] != "myRegion") {
             service.setForegroundNotificationInfo(
               title: "비콘 신호 감지",
               content: "비콘을 등록해주세요",
+            );
+            player.stop();
+          }
+
+          if(jsonData['name'] == "myRegion" && screenEventFlag){
+            print("alarmURI : $alarmUri");
+
+            // 진동을 울리기위한 프로세스
+            var androidPlatformChannelSpecifics =
+                const AndroidNotificationDetails(
+              'your channel id',
+              'your channel name',
+              importance: Importance.high,
+              priority: Priority.high,
+              enableVibration: true,
+            );
+            var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
+
+            var platformChannelSpecifics = NotificationDetails(
+                android: androidPlatformChannelSpecifics,
+                iOS: iOSPlatformChannelSpecifics);
+
+            // 비콘 신호수신 알람을 발생시킴
+            flutterLocalNotificationsPlugin.show(
+                888, "알람", "등록된 비콘 신호를 수신했습니다.", platformChannelSpecifics,
+                payload: '');
+
+            // 현재 음악이 재생중이 아닐 경우에
+            if (!player.playing) {
+              // 볼륨 강제 설정
+              PerfectVolumeControl.setVolume(0.2);
+
+              //유저가 선택한 파일일 경우
+              if (isUserFile!) {
+                // 새로운 파일 설정
+                player.setFilePath(alarmUri!);
+              } else {
+                // mp3 파일 설정
+                player.setAsset(alarmUri!);
+              }
+              // 선택한 파일 무한반복
+              player.setLoopMode(LoopMode.one);
+              player.play();
+            }
+          }
+          else{
+            service.setForegroundNotificationInfo(
+              title: "비콘 신호 감지",
+              content: "등록된 비콘 신호를 수신했습니다.",
             );
             player.stop();
           }
