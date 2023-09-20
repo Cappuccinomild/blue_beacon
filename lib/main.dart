@@ -354,6 +354,12 @@ void onStart(ServiceInstance service) async {
 
           // 비콘이 등록된 경우 알람을 발생시킴
           if (jsonData['name'] == "myRegion") {
+
+            service.setForegroundNotificationInfo(
+              title: "비콘 신호 감지",
+              content: "등록된 비콘 신호를 수신했습니다.",
+            );
+
             if(screenEventFlag){
               print("alarmURI : $alarmUri");
 
