@@ -219,11 +219,16 @@ void onStart(ServiceInstance service) async {
   SharedPreferences pref = await SharedPreferences.getInstance();
   await pref.setString("beacon", "init");
 
-  String? alarmUri = pref.getString('filePath');
-  alarmUri ??= 'assets/audio/beep.mp3';
+  // uuid initalization
+  String uuid = pref.getString('uuid') ?? "";
 
-  bool? isUserFile = pref.getBool("isUserFile"); // 유저파일 여부 확인
-  isUserFile ??= false;
+  if(uuid != ""){
+    BeaconsPlugin.addRegion("myRegion", uuid);
+  }
+
+  // 최초 실행시 기본 알람음 설정
+  String alarmUri = pref.getString('filePath') ?? 'assets/audio/beep.mp3';
+  bool isUserFile = pref.getBool("isUserFile") ?? false; // 유저파일 여부 확인
 
   /// OPTIONAL when use custom notification
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =

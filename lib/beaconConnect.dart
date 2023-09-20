@@ -24,10 +24,14 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
   int remainingSeconds = 5;
   late Timer timer; // 타이머 선언
 
-  static void updateID(String ID) async {
+  static void updateUUID(String uuid) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.setString("uuid", uuid);
+  }
 
-    preferences.setString("ID", ID);
+  static void resetUUID() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.remove("uuid");
   }
 
   @override
@@ -35,6 +39,7 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
     super.initState();
 
     FlutterBackgroundService().invoke("resetRegion");
+    resetUUID();
 
     // 1초마다 타이머를 체크하여 남은 시간을 갱신
     timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
@@ -148,6 +153,8 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
                                   "name": "myRegion",
                                   "uuid": uuid,
                                 });
+
+                                updateUUID(uuid!);
 
                                 if (isConnected) Navigator.of(context).pop();
                                 isConnected = !isConnected;

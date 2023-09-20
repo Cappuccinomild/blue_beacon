@@ -29,6 +29,7 @@ class _TestAppState extends State<TestApp> {
 
   bool touchEvent = false;
   bool screenEvent = false;
+  bool isMine = false;
 
   @override
   void initState() {
@@ -248,6 +249,7 @@ class _TestAppState extends State<TestApp> {
                       );
                     }
                     final data = snapshot.data!;
+                    String? name = data['name'];
                     String? uuid = data["uuid"];
                     String? proximity = data["proximity"];
                     String? distance = data["distance"];
@@ -257,6 +259,11 @@ class _TestAppState extends State<TestApp> {
                       isBluetoothOn = false;
                     } else {
                       isBluetoothOn = true;
+                      if(name == "myRegion"){
+                        isMine = true;
+                      }else{
+                        isMine = false;
+                      }
                     }
 
                     return Column(
@@ -289,7 +296,7 @@ class _TestAppState extends State<TestApp> {
                           child: Column(
                             children: [
                               Text(
-                                isBluetoothOn ? "비컨이 켜져있습니다" : "비컨이 꺼져있습니다",
+                                isBluetoothOn ? "비컨 신호 수신중" : "비컨 신호가 없습니다.",
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -297,9 +304,9 @@ class _TestAppState extends State<TestApp> {
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                isBluetoothOn
-                                    ? "비컨의 전원을 꺼 알람을 해제하세요"
-                                    : "비컨의 전원을 켜 알람을 울려주세요",
+                                isBluetoothOn && isMine
+                                    ? "등록된 비컨에서 신호가 발생했습니다."
+                                    : isBluetoothOn ? "등록되지 않은 비컨입니다." : "비컨 신호 수신 대기중.",
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black26,
