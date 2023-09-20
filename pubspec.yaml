@@ -51,6 +51,7 @@ dependencies:
   restart_app: ^1.2.1
   perfect_volume_control: ^1.0.5
   screen_state: ^3.0.1
+  flutter_svg: ^2.0.7
 
 dev_dependencies:
   flutter_test:
@@ -82,6 +83,8 @@ flutter:
     - assets/audio/beep3.mp3
     - assets/audio/chicken.mp3
     - assets/audio/playtime.mp3
+    - assets/image/bluetooth_on.svg
+    - assets/image/bluetooth_off.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -4,6 +4,7 @@ import 'package:blue_beacon/beaconConnect.dart';
 import 'package:blue_beacon/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -101,7 +102,7 @@ class _TestAppState extends State<TestApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: Text('아이콘 버튼 예제'),
+          title: Text('블루알리미'),
           // 메뉴 아이콘 추가
           leading: Builder(
             builder: (BuildContext context) {
@@ -119,23 +120,36 @@ class _TestAppState extends State<TestApp> {
           child: ListView(
             padding: EdgeInsets.zero,
             children: <Widget>[
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Text(
-                  '알람 미적용 조건 설정',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
+              const SizedBox(
+                height: 140,
+                child: DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '알람 미적용 조건 설정',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                      ),
+                    ),
                   ),
                 ),
               ),
               ListTile(
-                title: Text('화면 사용여부'),
+                minVerticalPadding: 10,
+                title: const Padding(
+                  padding: EdgeInsets.only(bottom: 5),
+                  child: Text(
+                    '화면이 켜져있을 때 알람 무시',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
                 subtitle: screenEvent
-                    ? Text('화면이 켜져있을때 알람을 무시합니다.')
-                    : Text('화면이 켜져있어도 알람을 울립니다.'),
+                    ? const Text('화면이 켜져있을때 알람을 무시합니다.')
+                    : const Text('화면이 켜져있어도 알람을 울립니다.'),
                 trailing: Switch(
                   value: screenEvent,
                   onChanged: (value) {
@@ -146,12 +160,27 @@ class _TestAppState extends State<TestApp> {
                     });
                   },
                 ),
+                onTap: () {
+                  setState(() {
+                    screenEvent = !screenEvent;
+                    prefs.setBool("screenEvent", screenEvent);
+                    FlutterBackgroundService().invoke("setScreenEvent", {"value": screenEvent});
+                  });
+                },
               ),
+              const Divider(),
               ListTile(
-                title: Text('터치 사용여부'),
+                minVerticalPadding: 10,
+                title: const Padding(
+                  padding: EdgeInsets.only(bottom: 5),
+                  child: Text(
+                    '터치 사용 시 알람 무시',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
                 subtitle: touchEvent
-                    ? Text('최근에 화면을 터치했다면 알람을 무시합니다.')
-                    : Text('60초간 화면을 터치하지 않으면 알람을 울립니다.'),
+                    ? const Text('최근에 화면을 터치했다면 알람을 무시합니다.')
+                    : const Text('60초간 화면을 터치하지 않으면 알람을 울립니다.'),
                 trailing: Switch(
                   value: touchEvent,
                   onChanged: (value) {
@@ -162,9 +191,20 @@ class _TestAppState extends State<TestApp> {
                     });
                   },
                 ),
+                onTap: () {
+                  setState(() {
+                    touchEvent = !touchEvent;
+                    prefs.setBool("set", touchEvent);
+                    FlutterBackgroundService().invoke("setTouchEvent", {"value": touchEvent});
+                  });
+                },
               ),
+              const Divider(),
               ListTile(
-                title: Text('시간 선택'),
+                title: const Padding(
+                  padding: EdgeInsets.only(bottom: 5),
+                  child: Text('시간 선택', style: TextStyle(fontSize: 16),),
+                ),
                 subtitle: Text('선택된 시간: ${secondsToMinutes(selectedSeconds)} 분 ${remainMinute(selectedSeconds)}초'),
               ),
               Slider(
@@ -181,6 +221,7 @@ class _TestAppState extends State<TestApp> {
                   });
                 },
               ),
+              const Divider(),
               // 필요한 만큼 메뉴 항목을 추가할 수 있습니다.
             ],
           ),
@@ -213,7 +254,7 @@ class _TestAppState extends State<TestApp> {
                 return Column(
                   children: [
                     Container(
-                      margin: EdgeInsets.only(top: 200, bottom: 30),
+                      margin: const EdgeInsets.only(top: 180, bottom: 30),
                       child: InkWell(
                         highlightColor: Colors.transparent,
                         splashColor: Colors.transparent,
@@ -223,13 +264,21 @@ class _TestAppState extends State<TestApp> {
                           });
                           initPrefs();
                         },
-                        child: isBluetoothOn
-                            ? Image.asset("assets/image/bluetooth_on.png")
-                            : Image.asset("assets/image/bluetooth_off.png"),
+                          child: isBluetoothOn
+                              ? SvgPicture.asset(
+                            'assets/image/bluetooth_on.svg',
+                            height: 170,
+                            width: 170,
+                          )
+                              : SvgPicture.asset(
+                            'assets/image/bluetooth_off.svg',
+                            height: 170,
+                            width: 170,
+                          )
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.only(bottom: 100),
+                      margin: const EdgeInsets.only(bottom: 80),
                       child: Column(
                         children: [
                           Text(
@@ -269,7 +318,7 @@ class _TestAppState extends State<TestApp> {
                     },
                     child: const Text("비컨 재등록", style: TextStyle(fontSize: 24)),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
