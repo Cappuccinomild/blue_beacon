@@ -353,46 +353,48 @@ void onStart(ServiceInstance service) async {
           );
 
           // 비콘이 등록된 경우 알람을 발생시킴
-          if (jsonData['name'] == "myRegion" && screenEventFlag) {
-            print("alarmURI : $alarmUri");
+          if (jsonData['name'] == "myRegion") {
+            if(screenEventFlag){
+              print("alarmURI : $alarmUri");
 
-            // 진동을 울리기위한 프로세스
-            var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-              'your channel id', 'your channel name',
-              importance: Importance.high,
-              priority: Priority.high,
-              enableVibration: true,
-            );
-            var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
+              // 진동을 울리기위한 프로세스
+              var androidPlatformChannelSpecifics =
+                  const AndroidNotificationDetails(
+                'your channel id',
+                'your channel name',
+                importance: Importance.high,
+                priority: Priority.high,
+                enableVibration: true,
+              );
+              var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
 
-            var platformChannelSpecifics = NotificationDetails(
-                android: androidPlatformChannelSpecifics,
-                iOS: iOSPlatformChannelSpecifics);
+              var platformChannelSpecifics = NotificationDetails(
+                  android: androidPlatformChannelSpecifics,
+                  iOS: iOSPlatformChannelSpecifics);
 
-            // 비콘 신호수신 알람을 발생시킴
-            flutterLocalNotificationsPlugin.show(
-                888, "알람", "등록된 비콘 신호를 수신했습니다.", platformChannelSpecifics,
-                payload: '');
+              // 비콘 신호수신 알람을 발생시킴
+              flutterLocalNotificationsPlugin.show(
+                  888, "알람", "등록된 비콘 신호를 수신했습니다.", platformChannelSpecifics,
+                  payload: '');
 
-            // 현재 음악이 재생중이 아닐 경우에
-            if(!player.playing){
-              // 볼륨 강제 설정
-              PerfectVolumeControl.setVolume(0.2);
+              // 현재 음악이 재생중이 아닐 경우에
+              if (!player.playing) {
+                // 볼륨 강제 설정
+                PerfectVolumeControl.setVolume(0.2);
 
-              //유저가 선택한 파일일 경우
-              if(isUserFile!){
-                // 새로운 파일 설정
-                player.setFilePath(alarmUri!);
+                //유저가 선택한 파일일 경우
+                if (isUserFile!) {
+                  // 새로운 파일 설정
+                  player.setFilePath(alarmUri!);
+                } else {
+                  // mp3 파일 설정
+                  player.setAsset(alarmUri!);
+                }
+                // 선택한 파일 무한반복
+                player.setLoopMode(LoopMode.one);
+                player.play();
               }
-              else{
-                // mp3 파일 설정
-                player.setAsset(alarmUri!);
-              }
-              // 선택한 파일 무한반복
-              player.setLoopMode(LoopMode.one);
-              player.play();
             }
-
           }
 
           // 비콘이 등록되지 않은 경우 비콘 등록안내 메세지를 발생시킴
