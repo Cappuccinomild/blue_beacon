@@ -87,8 +87,8 @@ class _SettingScreenState extends State<SettingScreen> {
   Future<void> playSound(String audioAsset) async {
     // print("audioPlayer() 호출");
     logger.d("playSound() 호출");
-    var volume = await PerfectVolumeControl.getVolume();
-    PerfectVolumeControl.setVolume(0.5);
+    // var volume = await PerfectVolumeControl.getVolume();
+    // PerfectVolumeControl.setVolume(0.5);
     await player.setAsset(audioAsset); // 선택한 옵션에 따라 다른 mp3 파일 설정
     player.play();
   }

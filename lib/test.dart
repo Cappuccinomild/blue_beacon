@@ -30,6 +30,7 @@ class _TestAppState extends State<TestApp> {
   bool touchEvent = false;
   bool screenEvent = false;
   bool isMine = false;
+  bool isRegistered = false;
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _TestAppState extends State<TestApp> {
       touchEvent = prefs.getBool("touchEvent") ?? false;
       screenEvent = prefs.getBool("screenEvent") ?? false;
       selectedSeconds = prefs.getDouble("selectedSeconds") ?? 1;
+      isRegistered = prefs.getBool("isRegistered") ?? false;
     });
 
     // if (prefs.getBool('isUserFile') == false) {
@@ -161,14 +163,6 @@ class _TestAppState extends State<TestApp> {
                     });
                   },
                 ),
-                onTap: () {
-                  setState(() {
-                    screenEvent = !screenEvent;
-                    prefs.setBool("screenEvent", screenEvent);
-                    FlutterBackgroundService()
-                        .invoke("setScreenEvent", {"value": screenEvent});
-                  });
-                },
               ),
               const Divider(),
               ListTile(
@@ -194,14 +188,6 @@ class _TestAppState extends State<TestApp> {
                     });
                   },
                 ),
-                onTap: () {
-                  setState(() {
-                    touchEvent = !touchEvent;
-                    prefs.setBool("set", touchEvent);
-                    FlutterBackgroundService()
-                        .invoke("setTouchEvent", {"value": touchEvent});
-                  });
-                },
               ),
               const Divider(),
               ListTile(
@@ -257,14 +243,18 @@ class _TestAppState extends State<TestApp> {
                     // 내용이 없을 경우
                     if (uuid == "") {
                       isBluetoothOn = false;
-                    } else {
+                    }
+                    else {
                       isBluetoothOn = true;
                       if(name == "myRegion"){
                         isMine = true;
-                      }else{
+                      }
+                      else{
                         isMine = false;
                       }
+
                     }
+                    initPrefs();
 
                     return Column(
                       children: [
@@ -330,7 +320,7 @@ class _TestAppState extends State<TestApp> {
                           MaterialPageRoute(
                               builder: (context) => BeaconConnectScreen()));
                     },
-                    child: const Text("비컨 재등록", style: TextStyle(fontSize: 24)),
+                    child: Text(isRegistered ? "비컨 재등록" : "비컨 등록", style: TextStyle(fontSize: 24)),
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton(

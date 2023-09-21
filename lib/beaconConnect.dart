@@ -27,11 +27,13 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
   static void updateUUID(String uuid) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.setString("uuid", uuid);
+    await preferences.setBool("isRegistered", true);
   }
 
   static void resetUUID() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.remove("uuid");
+    await preferences.setBool("isRegistered", false);
   }
 
   @override
@@ -153,7 +155,6 @@ class _BeaconConnectScreenState extends State<BeaconConnectScreen> {
                                   "name": "myRegion",
                                   "uuid": uuid,
                                 });
-
                                 updateUUID(uuid!);
 
                                 if (isConnected) Navigator.of(context).pop();
