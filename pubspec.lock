@@ -270,6 +270,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.16"
+  flutter_svg:
+    dependency: "direct main"
+    description:
+      name: flutter_svg
+      sha256: "8c5d68a82add3ca76d792f058b186a0599414f279f00ece4830b9b231b570338"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.7"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -392,6 +400,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  path_parsing:
+    dependency: transitive
+    description:
+      name: path_parsing
+      sha256: e3e67b1629e6f7e8100b367d3db6ba6af4b1f0bb80f64db18ef1fbabd2fa9ccf
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   path_provider:
     dependency: transitive
     description:
@@ -440,6 +456,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1"
+  perfect_volume_control:
+    dependency: "direct main"
+    description:
+      name: perfect_volume_control
+      sha256: "9bc513e4a2b6151f7d04fc917271c40bdd44cbe67224d52a314302879d2a30f8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.5"
   permission_handler:
     dependency: "direct main"
     description:
@@ -504,6 +528,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.6"
+  restart_app:
+    dependency: "direct main"
+    description:
+      name: restart_app
+      sha256: b37daeb1c02fcab30e19d9e30b6fdd215bd53577efd927042eb77cf6f09daadb
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.1"
   rxdart:
     dependency: transitive
     description:
@@ -512,6 +544,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.27.7"
+  screen_state:
+    dependency: "direct main"
+    description:
+      name: screen_state
+      sha256: "4d89d4b429e4f30de89add477c630384feb5b786dcf4380ef1e015841e169672"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -653,6 +693,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  vector_graphics:
+    dependency: transitive
+    description:
+      name: vector_graphics
+      sha256: "670f6e07aca990b4a2bcdc08a784193c4ccdd1932620244c3a86bb72a0eac67f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.7"
+  vector_graphics_codec:
+    dependency: transitive
+    description:
+      name: vector_graphics_codec
+      sha256: "7451721781d967db9933b63f5733b1c4533022c0ba373a01bdd79d1a5457f69f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.7"
+  vector_graphics_compiler:
+    dependency: transitive
+    description:
+      name: vector_graphics_compiler
+      sha256: "80a13c613c8bde758b1464a1755a7b3a8f2b6cec61fbf0f5a53c94c30f03ba2e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.7"
   vector_math:
     dependency: transitive
     description:
@@ -661,6 +725,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  volume_control:
+    dependency: "direct main"
+    description:
+      name: volume_control
+      sha256: "2c370083dd3892b8e5f5650275e452fb97e90a1e1abff65b5f6a761e2bc8b754"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.5"
   win32:
     dependency: transitive
     description:
