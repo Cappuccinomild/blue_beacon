@@ -27,7 +27,11 @@ import 'package:blue_beacon/test.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // 권한 요청
   await authInitialize();
+  
+  // 메인 앱 실행
   runApp(MyApp());
 }
 
@@ -49,7 +53,8 @@ Future<void> authInitialize() async {
       Permission.locationWhenInUse,
       // Permission.scheduleExactAlarm,
     ];
-
+    
+    // 안드로이드 버전별 권한 관리
     if (release >= 12) {
       permissionsToRequest.add(Permission.scheduleExactAlarm);
     }
@@ -66,6 +71,8 @@ Future<void> authInitialize() async {
     if (allElementGranted) {
       // All permissions are granted, runApp
 
+      // 미리 실행중인 프로세스가 존재할 경우 종료 메세지를 보내고
+      // 메인 프로세스를 실행함
       if (allAdvancedGranted){
         while(await FlutterBackgroundService().isRunning()){
           FlutterBackgroundService().invoke("stopService");
@@ -74,6 +81,8 @@ Future<void> authInitialize() async {
             toastLength: Toast.LENGTH_SHORT,
           );
         }
+
+        // 비콘 신호를 관리하는 프로세스 실행
         await initializeService();
         logger.d('All permissions are granted!');
       }
@@ -89,7 +98,7 @@ Future<void> authInitialize() async {
       }
 
     } else {
-      // 권한 상태를 개별적으로 확인하고 처리할 수도 있습니다.
+      // 권한 상태를 개별적으로 확인하고 처리
       if (statusesElement[Permission.bluetoothScan] != PermissionStatus.granted) {
         print('Bluetooth Scan permission is denied');
       }
@@ -136,7 +145,8 @@ Future<void> initializeService() async {
       importance: Importance.low, // importance must be at low or higher level
       enableVibration: false
   );
-
+  
+  // 상단 알림바 초기화
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
@@ -155,6 +165,7 @@ Future<void> initializeService() async {
       AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
+  // 상단 알림바 설정
   await service.configure(
     androidConfiguration: AndroidConfiguration(
       // this will be executed when app is in foreground or background in separated isolate
@@ -180,7 +191,8 @@ Future<void> initializeService() async {
       onBackground: onIosBackground,
     ),
   );
-
+  
+  // 포그라운드 서비스 시작
   service.startService();
   service.invoke("setAsForeground");
 }
@@ -201,7 +213,8 @@ void onStart(ServiceInstance service) async {
 
   // Beacon Initialize
   BeaconsPlugin.listenToBeacons(beaconEventsController);
-
+  
+  //ibeacon 신호를 수신하기 위한 필터 설정
   BeaconsPlugin.addBeaconLayoutForAndroid(
       "m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
 
@@ -210,7 +223,8 @@ void onStart(ServiceInstance service) async {
 
   //BeaconsPlugin.setBackgroundScanPeriodForAndroid(
   //    backgroundScanPeriod: 1100, backgroundBetweenScanPeriod: 10);
-
+  
+  //비컨 모니터링 시작
   BeaconsPlugin.startMonitoring();
 
   // For flutter prior to version 3.0.0
@@ -233,7 +247,8 @@ void onStart(ServiceInstance service) async {
   /// OPTIONAL when use custom notification
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
-
+  
+  // 포그라운드 백그라운드 설정
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
       service.setAsForegroundService();
@@ -305,7 +320,8 @@ void onStart(ServiceInstance service) async {
   });
 
   final timeoutDuration = Duration(seconds: 3);
-
+  
+  //스크린 이벤트 처리
   final StreamSubscription<ScreenStateEvent> _subscription = Screen().screenStateStream!.listen((event) {
     print("screenEvent : ${event.toString()}");
     if(event.toString() == "ScreenStateEvent.SCREEN_ON"){
@@ -329,7 +345,8 @@ void onStart(ServiceInstance service) async {
   });
 
   StreamController<bool> touchEventStreamController = StreamController<bool>();
-
+  
+  //비컨 신호 처리
   final event_stream = beaconEventsController.stream;
   if (service is AndroidServiceInstance) {
     if (await service.isForegroundService()) {
