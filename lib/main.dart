@@ -248,19 +248,19 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  // 비콘 이름 등록
+  // 비컨 이름 등록
   // FlutterBackgroundService().invoke("addRegion", {
   // "name" : "myRegion",
   // "uuid" : uuid,
   // });
 
-  // 비콘 이름 수신
+  // 비컨 이름 수신
   service.on('addRegion').listen((event) {
     print(event);
     BeaconsPlugin.addRegion(event?['name'], event?['uuid']);
   });
 
-  //비콘 이름 초기화
+  //비컨 이름 초기화
   service.on('resetRegion').listen((event) {
     BeaconsPlugin.clearRegions();
   });
@@ -277,7 +277,7 @@ void onStart(ServiceInstance service) async {
   });
 
   // 화면이나 1분내 터치 유무를 확인해 알람을 울리지 않도록 함.
-  // 비콘이 등록된 경우 AND (screenEventFlag OR touchEventFlag)
+  // 비컨이 등록된 경우 AND (screenEventFlag OR touchEventFlag)
   // screenEventFlag = !(screenEvent and screenOn)
 
   //최초 실행시에는 화면이 켜져있는것으로 간주
@@ -307,7 +307,7 @@ void onStart(ServiceInstance service) async {
   final timeoutDuration = Duration(seconds: 3);
 
   final StreamSubscription<ScreenStateEvent> _subscription = Screen().screenStateStream!.listen((event) {
-
+    print("screenEvent : ${event.toString()}");
     if(event.toString() == "ScreenStateEvent.SCREEN_ON"){
       screenOn = true;
       screenEventFlag = !(screenEvent && screenOn);
@@ -338,8 +338,8 @@ void onStart(ServiceInstance service) async {
         print("time_out : $event");
 
         service.setForegroundNotificationInfo(
-          title: "비콘 감지되지 않음",
-          content: "비콘 신호가 감지되지 않습니다.",
+          title: "비컨 감지되지 않음",
+          content: "비컨 신호가 감지되지 않습니다.",
         );
 
         service.invoke('update',{
@@ -359,8 +359,8 @@ void onStart(ServiceInstance service) async {
           Map<String, dynamic> jsonData = jsonDecode(data);
 
           service.setForegroundNotificationInfo(
-            title: "비콘 감지됨",
-            content: "비콘 신호를 수신했습니다.",
+            title: "비컨 감지됨",
+            content: "비컨 신호를 수신했습니다.",
           );
 
           service.invoke(
@@ -395,14 +395,15 @@ void onStart(ServiceInstance service) async {
                   android: androidPlatformChannelSpecifics,
                   iOS: iOSPlatformChannelSpecifics);
 
-              // 비콘 신호수신 알람을 발생시킴
+              // 비컨 신호수신 알람을 발생시킴
               flutterLocalNotificationsPlugin.show(
-                  888, "알람", "등록된 비콘 신호를 수신했습니다.", platformChannelSpecifics,
+                  888, "알람", "등록된 비컨 신호를 수신했습니다.", platformChannelSpecifics,
                   payload: '');
 
               // 현재 음악이 재생중이 아닐 경우에
               if (!player.playing) {
                 // 볼륨 강제 설정
+                //print("vol ${PerfectVolumeControl.getVolume()}");
                 PerfectVolumeControl.setVolume(0.2);
 
                 //유저가 선택한 파일일 경우
@@ -421,7 +422,7 @@ void onStart(ServiceInstance service) async {
             }
             else{
               service.setForegroundNotificationInfo(
-                title: "등록된 비콘 신호 감지",
+                title: "등록된 비컨 신호 감지",
                 content: "현재 스마트폰 사용중.",
               );
               player.stop();
@@ -430,8 +431,8 @@ void onStart(ServiceInstance service) async {
           }
           else{
             service.setForegroundNotificationInfo(
-              title: "등록되지 않은 비콘 신호 감지",
-              content: "비콘을 등록해주세요",
+              title: "등록되지 않은 비컨 신호 감지",
+              content: "비컨을 등록해주세요",
             );
             player.stop();
           }
