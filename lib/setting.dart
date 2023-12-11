@@ -9,6 +9,14 @@ import 'package:logger/logger.dart';
 import 'dart:developer';
 import 'package:perfect_volume_control/perfect_volume_control.dart';
 
+/// filename: setting.dart
+/// author: 강병오, 이도훈
+/// date: 2023-12-11
+/// description:
+///     - 비컨 신호가 수신될 때 알람음 설정
+///     - 기본 알람음 5개 제공
+///     - 사용자 기기에서 음악 선택 가능
+
 var logger = Logger(
   printer: PrettyPrinter(methodCount: 0),
 );
@@ -36,7 +44,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
   @override
   void dispose() {
-    // 페이지가 종료될 때 소리를 중지합니다.
+    // 페이지가 종료될 때 소리를 중지
     player.stop();
     super.dispose();
     _subscription.cancel();
@@ -61,6 +69,7 @@ class _SettingScreenState extends State<SettingScreen> {
     //   });
     // }
 
+    // 기기에서 선택한 음악인지 확인
     if (prefs.getBool('isUserFile') == false) {
       setState(() {
         selectedOption = prefs.getString('selectedSound') ?? 'none';
@@ -81,18 +90,16 @@ class _SettingScreenState extends State<SettingScreen> {
       final value = prefs.get(key);
       logger.d('Key: $key, Value: $value');
     }
-    // 나머지 초기화 작업 수행
   }
 
+  /// 오디오 재생하는 함수
   Future<void> playSound(String audioAsset) async {
-    // print("audioPlayer() 호출");
     logger.d("playSound() 호출");
-    // var volume = await PerfectVolumeControl.getVolume();
-    // PerfectVolumeControl.setVolume(0.5);
     await player.setAsset(audioAsset); // 선택한 옵션에 따라 다른 mp3 파일 설정
     player.play();
   }
 
+  /// 기기에서 음악 선택 후 재생하는 함수
   Future<void> pickAndPlayAudio() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.audio,
@@ -101,7 +108,6 @@ class _SettingScreenState extends State<SettingScreen> {
     if (result != null) {
       PlatformFile file = result.files.first;
       String filePath = file.path!; // 선택한 파일의 경로
-      // List<String> splitedStr = filePath.split('/');
       strList = filePath.split('/');
 
       logger.d("splitedStr: ${strList}");

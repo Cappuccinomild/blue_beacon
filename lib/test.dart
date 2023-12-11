@@ -8,6 +8,16 @@ import 'package:flutter_svg/svg.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// filename: test.dart
+/// author: 강병오, 이도훈
+/// date: 2023-12-11
+/// description:
+///     - 앱 실행 시 처음 표시되는 화면
+///     - 비컨 신호 여부 표시
+///     - 알람 미적용 조건 설정 가능
+///     - '비컨 등록' 버튼: BeaconConnectScreen(beaconConnect.dart)으로 이동
+///     - '알림 설정' 버튼: SettingScreen(setting.dart)으로 이동
+
 // void main() {
 //   // runApp(TestApp());
 //
@@ -40,20 +50,19 @@ class _TestAppState extends State<TestApp> {
 
   double selectedSeconds = 300.0; // 초 단위로 초기 선택값 (5분)
 
-// 초를 분으로 변환하는 함수
+  /// 초를 분으로 변환하는 함수
   int secondsToMinutes(double seconds) {
     return (seconds / 60).floor();
   }
 
-// 분을 초로 변환하는 함수
+  /// 분을 초로 변환하는 함수
   double remainMinute(double seconds) {
     return seconds % 60;
   }
 
+  /// 각종 사용자 설정 불러와서 초기화
   Future<void> initPrefs() async {
-    // print("initPrefs() 호출");
     logger.d("initPrefs() 호출");
-    // log('initPrefs() 호출');
     prefs = await SharedPreferences.getInstance();
 
     setState(() {
@@ -90,13 +99,12 @@ class _TestAppState extends State<TestApp> {
       }
     }
 
-    // 모든 키를 가져오고 각 키에 대한 값을 출력
+    // sharedPrefs 내용 출력
     final allKeys = prefs.getKeys();
     for (final key in allKeys) {
       final value = prefs.get(key);
       logger.d('Key: $key, Value: $value');
     }
-    // 나머지 초기화 작업 수행
   }
 
   @override
